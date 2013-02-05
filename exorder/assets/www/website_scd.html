@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title></title>
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+		<meta charset="utf-8">
+
+		<!-- iPad/iPhone specific css below, add after your main css >
+		<link rel="stylesheet" media="only screen and (max-device-width: 1024px)" href="ipad.css" type="text/css" />
+		<link rel="stylesheet" media="only screen and (max-device-width: 480px)" href="iphone.css" type="text/css" />
+		-->
+
+        <link rel="stylesheet" href="js/jquery.mobile-1.2.0.min.css" type="text/css" />
+		<link rel="stylesheet" href="css/iphone.css" type="text/css" />
+
+		<script type="text/javascript" charset="utf-8" src="js/jquery-1.8.2.min.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/base64.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/aes.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/cordova.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/main.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/jquery.mobile-1.2.0.min.js"></script>
+
+		<script type="text/javascript">
+            
+			$(document).ready(function(){
+				document.addEventListener("deviceready", onDeviceReady, false);
+			});
+
+			function onDeviceReady() {
+				// 通信確認
+				if (check_network() == 'none'){
+					var chSetting = getLocalStorage('chSetting');
+					if(chSetting == null || chSetting == ''){
+						window.location.href = 'netError.html';
+					} else {
+						// とりあえず表示だけする
+						window.location.href = 'setting.html';
+					}
+				} else {
+					// 通信出来る
+					onDeviceReady2();
+				}
+			}
+				
+			function onDeviceReady2(){
+				
+				$.ajaxSetup({
+					timeout: 5000
+				});
+				
+				// 戻るURLの初期設定
+				var before = getLocalStorage('before');
+				setLocalStorage('before', 'website.html');
+				$("#backb").attr("href", before);
+				// バックボタン設定
+				document.addEventListener("backbutton", function(){
+					window.location.href = before;
+				}, false);
+				// メニューボタン設定
+				$('#nav').css('display', 'block');
+				document.addEventListener("menubutton", function(){
+					if ($('#nav').is(':visible')) {
+						$('#nav').css('display', 'none');
+					} else {
+						$('#nav').css('display', 'block');
+					}
+				}, false);
+
+                    var get = new Object();
+                    var page = getLocalStorage('page');
+                    if(page != '' && page != null) {
+                    get['page'] = page;
+                        
+                    console.log("page:"+get['page']);
+                    var filename = "http://exorder.jp/app/phonegap/"+get['page'];
+                }
+				
+				// html取得
+				getIndex(filename);
+				function getIndex(filename) {
+					xmlhttp = new XMLHttpRequest();
+					if (xmlhttp){
+						xmlhttp.onreadystatechange = check;
+						xmlhttp.open("GET", filename);
+						xmlhttp.send(null);
+					}
+				}
+				function check(){
+					if (xmlhttp.readyState == 4 && xmlhttp.status == 200){
+						document.getElementById("htmlData").innerHTML = xmlhttp.responseText;
+						console.log(xmlhttp.responseText);
+					}
+				}
+				
+			}
+			
+			// navバーのbarcode選択でbarcode画面表示にフラグを切り替え
+			function chShowItemFlg() {
+				setLocalStorage('show_item_flg', 'false');
+				window.location.href = 'barcode.html';
+			}
+			
+			// navバーの購入履歴選択で画面表示フラグを切り替え
+			function chShowOrderFlg() {
+				setLocalStorage('show_order_flg', 'false');
+				window.location.href = 'show_order.html';
+			}
+
+		</script>
+        
+	</head>
+
+	<body>
+		
+		<div data-role="page" data-add-back-btn="false">
+            
+			<div data-role="header" id="header" data-position="fixed">
+				<h1 id="title">説明</h1>
+				<a id="backb" href="index.html" class="ui-btn-left" data-icon="arrow-l" data-direction="reverse" data-ajax="false">
+					戻る
+				</a>
+			</div>
+            
+			<div data-role="content">
+       			 <div id="htmlData"></div>
+            </div>
+            
+			<!-- nav -->
+			<div id="nav" class="footer" data-role="footer" data-position="fixed" data-id="tabber">
+				<ul>
+					<li class="tab01">
+						<a href="#" data-ajax="false"  onclick="chShowOrderFlg();"> <span>購入履歴</span> </a>
+					</li>
+					<li class="tab02">
+						<a href="#" data-ajax="false" onclick="chShowItemFlg();"> <span>読み取り</span> </a>
+					</li>
+					<li class="tab03">
+						<a href="setting.html" data-ajax="false"> <span>設定</span> </a>
+					</li>
+				</ul>
+			</div>
+            
+		</div>
+	</body>
+</html>
+
