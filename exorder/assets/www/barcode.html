@@ -405,7 +405,7 @@
 						// お届け先
 						var addressee = getLocalStorage('address_name');
 						console.log('お届け先: ' + addressee);
-						if (addressee != '' && params.adr_flg == 1) {
+						if (addressee != null && addressee != '' && params.adr_flg == 1) {
 							$("#addressee").css("display", "block");
 							$("#recipient_subject").text(getLocalStorage('address_name'));
 						}
@@ -429,7 +429,8 @@
 							document.getElementById("data_change").innerHTML = data_change;
 						}
 
-						// １個の送料
+						// １個の送料 item_pay_sts
+						setLocalStorage('order_carriage', 0);
 						if (params.ship_flg == 1) {
 							var shippingCost = '<a href="#page_shopShipping" deta-transition="slide" data-ajax="false" class="shippingCost_link" onclick="javascript:getShipping();">';
 							shippingCost += '<dl class="shippingCost"><dt>送料</dt><dd id="order_carriage"><span id="carriage">';
@@ -438,6 +439,8 @@
 							if (parseInt(params['order_carriage']) > 0) {
 								// 送料が有料の場合
 								shippingCost += currency(params['order_carriage']) + '円</span></dd></dl>';
+								// 送料の保存
+								setLocalStorage('order_carriage', params['order_carriage']);
 							} else {
 								// 送料０円の場合
 								// 利用者情報の有無を判定
@@ -500,44 +503,52 @@
 							document.getElementById("item_stock_sts").innerHTML = item_stock_sts;
 						}
 
-						// 支払いステータス
-						//	if(){
-						item_pay_sts = '';
-						//	params.pay_cod = 1; // test
-						//	params.ordercommission = 315; // test
+						/* //////////////////////////////////////////////////
+							支払いステータスの説明
+								pat_card:カード払い
+								pay_cod: 代金引換
+								ordeercommission:代引手数料
+								non_ordercommission:代引き手数料無料になる金額
+						*/ //////////////////////////////////////////////////
+						var item_pay_sts = '';
 						if (params.pay_card == 1) {
 							// カード払い
 							item_pay_sts = '<p class="ico ico_onlyRemaining">カード払い</p>';
+							
 						} else if (params.pay_cod == 1) {
 							// 代引き
 							item_pay_sts = '<p class="ico ico_onlyRemaining">代金引換</p>';
-						}
-						if (item_pay_sts != '') {
-							document.getElementById("item_pay_sts").innerHTML = item_pay_sts;
-							// 代引き手数料
 							if (params.ordercommission && parseInt(params.ordercommission) > 0) {
-								var pay_codCost = '<span>手数料 ';
-								pay_codCost += currency(params.ordercommission) + '円</span>';
+								// 代引き手数料:表示する
+								var pay_codCost = ' <span>手数料：' + currency(params.ordercommission) + '円</span>';
+								// 代引き手数料無料
+								if (parseInt(params['non_ordercommission']) > 0) {
+									non_ordercommission = '<p style="font-size:11px;">' + currency(String(params['non_ordercommission'])) + '<span>円以上は手数料無料</span></font></p>';
+								}
 								$("#pay_cod_cost").html(pay_codCost);
+								$("#non_ordercommission").html(non_ordercommission);
 							} else {
+								// 代引き手数料:表示しない
 								params.ordercommission = 0;
+								params.non_ordercommission = 0;
 							}
-						} else {
-							params.ordercommission = 0;
 						}
-						//	}
-
+						$("#item_pay_sts").html(item_pay_sts);
+						
 						// 合計金額
 						var isShippingCost = getLocalStorage('shippingCost');
-						if (isShippingCost == 'enable') {
+						if (isShippingCost != 'disable') {
 							$("#total_price_text").text("ご購入合計金額：");
 						} else {
-							$("#total_price_text").text("商品合計金額：");
+							$("#total_price_text").text("ご購入合計金額（別途送料）：");
 						}
+						// 販売フラグを判定
 						if (params.is_sales_flg == 'enable') {
+							// 販売 OK
 							var total_price = currency(String(parseInt(params.item_price) + parseInt(params.order_carriage) + parseInt(params.ordercommission))) + '円(税込)';
 							$("#total").text(total_price);
 						} else {
+							// 販売 NG
 							$('#total_price').css('display', 'none');
 						}
 
@@ -554,14 +565,11 @@
 							}
 							// 合計金額をrelに持たせる
 							for (var i = min; i <= max; i++) {
-								var toto = (parseInt(params.item_price) * i);
-								if (params['non_carriage_price'] == 0 || params['non_carriage_price'] > toto) {
-									toto = toto + parseInt(params.order_carriage) + parseInt(params.ordercommission);
-								}
-								amount += '<option value="' + String(i) + '" rel="' + toto + '">' + String(i) + '</option>';
+								var goodsTotal = (parseInt(params.item_price) * i);
+								amount += '<option value="' + String(i) + '" rel="' + goodsTotal + '">' + String(i) + '</option>';
 							}
 							$('#order_amount').html(amount).selectmenu('refresh', true);
-							// 数量フラグ
+							// 数量フラグ 非表示:0
 							if (params.amo_flg == 0) {
 								// 数量 非表示
 								$("#item_quantity").css('display', 'none');
@@ -607,23 +615,40 @@
 						setLocalStorage("contactParams", JSON.stringify(contactParams));
 						$("#contact").attr("href", 'contact.html');
 
-						// 保存した数量変化の値をセット
+						// 数量変更で保存した値をセット item_pay_sts
 						var initBackAmount = getLocalStorage('initBackAmount');
+						// 適用するか判定
 						if (initBackAmount != 'true') {
+							// 数量変更で保存した値を取得
 							getFile("backAmount", ChPriceOK, ChPriceNG);
+							// 取得成功
 							function ChPriceOK(hash) {
-								console.log('get:backAmount:OK: ' + hash);
 								hash = JSON.parse(hash);
+								// 合計金額タイトル
+								var totalTitle = String(hash.totalTitle);
+								// 表示合計金額
 								var total = currency(String(hash.total)) + '円(税込)';
-								$('#order_amount').val(String(hash.selectedValue));
-								$('#total').text(total);
-								var isSetting = getLocalStorage('shippingCost');
-								if (isSetting && isSetting == 'carriage') {
-									// 送料有料の場合
-									$('#total').text(currency(String($('#order_amount option:selected').attr('rel'))));
-									$('#order_carriage').html(hash.carriage);
-								}
-								$('#order_amount').val(String(hash.selectedValue)).selectmenu('refresh', true);
+								// 購入数量
+								var amount = String(hash.selectedValue);
+								// 送料 html
+								var carriage = hash.carriage;
+								// 手数料 html
+								var commission = hash.commission;
+								
+								// 合計金額タイトルの表示
+								$("#total_price_text").text(totalTitle);
+								// 送料表示
+								$('#order_carriage').html(htmlCarriage);
+								// 代引き手数料表示
+								$("#pay_cod_cost").html(htmlCommission);
+								// 合計金額表示
+								$("#total").text(currency(String(total)) + '円(税込)');
+								
+								// 購入数量表示
+								$('#order_amount').val(amount).selectmenu('refresh', true);
+								
+								// 送料有料の場合
+								//$('#total').text(currency(String($('#order_amount option:selected').attr('rel'))));
 							}
 
 							function ChPriceNG() {
@@ -645,33 +670,70 @@
 			function changePrice() {
 				var paramsText = getLocalStorage('show_item_params');
 				var params = JSON.parse(paramsText);
-				var tototo2 = currency(String($('#order_amount option:selected').attr('rel'))) + '円(税込)';
-				$("#total").text(tototo2);
-				var total = parseInt($('#order_amount option:selected').attr('rel'));
+				// 計算用の合計金額
+				var goodsTotal = parseInt($('#order_amount option:selected').attr('rel'));
+				// 購入数量
+				var amount = parseInt($('#order_amount option:selected').val());
+				//　計算用:商品のみ合計金額、代引き手数料、送料
+				var commission = parseInt(params.ordercommission);
+				var carriage = parseInt(getLocalStorage('order_carriage'));
+				// 合計金額の表示タイトル
+				var totalTitle = 'ご購入合計金額：';
+				// 初期化
+				var total = 0;
+				var htmlCarriage = '';
+				var htmlCommission = '';
+				
 				// 送料表示の判定
 				var shippingCost = getLocalStorage('shippingCost');
-				if (shippingCost == 'carriage') {
+				htmlCarriage = '<dl class="shippingCost"><dt>送料</dt><dd id="order_carriage">';
+				if (shippingCost != 'disable') {
 					// お届け先がある・送料表示をする
 					// 送料無料の反映
-					var htmlCarriage = '';
-					if ((parseInt(total) - parseInt(params.order_carriage)) >= parseInt(params.non_carriage_price)) {
+					if (params.non_carriage_price == 0 || goodsTotal >= parseInt(params.non_carriage_price)) {
 						htmlCarriage = '<span id="carriage"><em style="font-size:15px;">送料無料</em></span>';
+						carriage = 0;
 					} else {
 						htmlCarriage = '<span id="carriage">' + currency(String(params.order_carriage)) + '円</span>';
 					}
+					htmlCarriage += '</dd>';
 				} else {
-					// お届け先がない・送料確認の場合
-					$("#total_price_text").text("商品合計金額");
-					htmlCarriage = '<span id="carriage"><em style="font-size:15px;">送料を確認</em></span>';
+					// お届け先がない場合（送料確認）
+					var addressee = getLocalStorage('address_name');
+					if((addressee == null || addressee == '') && params.adr_flg == 1){
+						htmlCarriage += '<span id="carriage"><em style="font-size:15px;">送料確認</em></span>';
+						totalTitle = 'ご購入合計金額（別途送料）：';
+						carriage = 0;
+					}
 				}
-				$('#order_carriage').html(htmlCarriage);
+				htmlCarriage += '</dd>';
+				//代引き手数料の判定 item_pay_sts
+				if(params.non_ordercommission > 0){
+					if (goodsTotal >= parseInt(params.non_ordercommission)) {
+						htmlCommission = '<span id="carriage">手数料無料</span>';
+						commission = 0;
+					} else {
+						htmlCommission = '<span id="carriage">手数料：' + currency(String(params.ordercommission)) + '円</span>';
+					}
+				}
+				// 合計金額の生成
+				total = goodsTotal + carriage + commission;
+				// 合計金額タイトルの表示
+				$("#total_price_text").text(totalTitle);
+				// 送料表示
+				$('#shippingCost').html(htmlCarriage);
+				// 代引き手数料表示
+				$("#pay_cod_cost").html(htmlCommission);
+				// 合計金額表示
+				$("#total").text(currency(String(total)) + '円(税込)');
 
-				// 変化した値（購入数量・商品合計金額・送料含む合計金額・表示用送料・購入数量）
+				// 変化した値（合計金額タイトル・表示合計金額・送料・手数料・購入数量）
 				var chPrice = {
-					total : parseInt($('#order_amount option:selected').attr('rel')),
-					tototo2 : parseInt($('#order_amount option:selected').attr('rel')) + parseInt(params.order_carriage),
-					carriage : $('#order_carriage').val(),
-					selectedValue : $('#order_amount').val()
+					totalTitle: totalTitle,
+					total: total,
+					carriage: htmlCarriage,
+					commission: htmlCommission,
+					selectedValue: $('#order_amount').val()
 				};
 				// 変化した値の保存
 				setLocalStorage('initBackAmount', 'false');
@@ -1172,6 +1234,8 @@
 								<div id="item_pay_sts"></div>
 								<!-- 代引き手数料 -->
 								<div id="pay_cod_cost"></div>
+								<!-- 代引き手数料無料 -->
+								<div id="non_ordercommission" class="shippingCost"></div>
 								<!-- 在庫状況 -->
 								<div id="item_stock_sts"></div>
 							</div>
