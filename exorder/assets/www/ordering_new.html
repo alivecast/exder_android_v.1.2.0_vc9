@@ -206,7 +206,8 @@
 					$("#csBirthday").parent().append("<p class='error'>生年月日を正しく入力してください</p>");
 				}
 				//郵便番号のチェック
-				if ($("#customer_zipcode").val() == "" || !($("#customer_zipcode").val().match(/^\d{7}$|^\d{3}-\d{4}$/))) {
+				var customer_zipcode = $("#customer_zipcode").val().replace(/\s+$/, "");
+				if (customer_zipcode == "" || !(customer_zipcode.match(/^\d{7}$|^\d{3}-\d{4}$/))) {
 					$("#customer_zipcode").parent().append("<p class='error'>半角数字７桁で入力してください</p>");
 				}
 				// 市区町村のチェック
@@ -224,7 +225,8 @@
 					}
 				})
 				//電話番号のチェック
-				if ($("#customer_phone").val() == "" || !$("#customer_phone").val().match(/^\d{9,11}$|^\d{2,4}-\d{2,4}-\d{4}$/) || $("#customer_phone").val().match(/^0{2,4}-|^\d{2,4}-0{3,4}-|^0000/)) {
+				var customer_phone = $("#customer_phone").val().replace(/\s+$/, "");
+				if (customer_phone == "" || !customer_phone.match(/^\d{9,11}$|^\d{2,4}-\d{2,4}-\d{4}$/) || customer_phone.match(/^0{2,4}-|^\d{2,4}-0{3,4}-|^0000/)) {
 					$("#customer_phone").parent().append("<p class='error'>半角数字11桁までで市外局番から入力してください</p>");
 				}
 				// 性別のチェック
@@ -236,18 +238,22 @@
 					}
 				})
 				//メールアドレスのチェック
-				if ($('#customer_mail_1').val() == "") {
+				var mail1 = $("#customer_mail_1").val().replace(/\s+$/, "");
+				var mail2 = $("#customer_mail_2").val().replace(/\s+$/, "");
+				var mail3 = $("#customer_mail_3").val().replace(/\s+$/, "");
+				var mail4 = $("#customer_mail_4").val().replace(/\s+$/, "");
+				if (mail1 == "") {
 					$('#customer_mail_1').parent().append("<p class='error'>メールアドレスを入力してください</p>");
-				} else if (!$('#customer_mail_1').val().match(/^([a-zA-Z0-9])+([a-zA-Z0-9¥._-])*@([a-zA-Z0-9_-])+([a-zA-Z0-9¥._-]+)+$/)) {
+				} else if (!mail1.match(/^([a-zA-Z0-9])+([a-zA-Z0-9¥._-])*@([a-zA-Z0-9_-])+([a-zA-Z0-9¥._-]+)+$/)) {
 					$('#customer_mail_1').parent().append("<p class='error'>メールアドレスの形式が異なります</p>");
 				}
-				if ($('#customer_mail_2').val() != "" && !$('#customer_mail_2').val().match(/^([a-zA-Z0-9])+([a-zA-Z0-9¥._-])*@([a-zA-Z0-9_-])+([a-zA-Z0-9¥._-]+)+$/)) {
+				if (mail2 != "" && !mail2.match(/^([a-zA-Z0-9])+([a-zA-Z0-9¥._-])*@([a-zA-Z0-9_-])+([a-zA-Z0-9¥._-]+)+$/)) {
 					$('#customer_mail_2').parent().append("<p class='error'>メールアドレスの形式が異なります</p>");
 				}
-				if ($('#customer_mail_3').val() != "" && !$('#customer_mail_3').val().match(/^([a-zA-Z0-9])+([a-zA-Z0-9¥._-])*@([a-zA-Z0-9_-])+([a-zA-Z0-9¥._-]+)+$/)) {
+				if (mail3 != "" && !mail3.match(/^([a-zA-Z0-9])+([a-zA-Z0-9¥._-])*@([a-zA-Z0-9_-])+([a-zA-Z0-9¥._-]+)+$/)) {
 					$('#customer_mail_3').parent().append("<p class='error'>メールアドレスの形式が異なります</p>");
 				}
-				if ($('#customer_mail_4').val() != "" && !$('#customer_mail_4').val().match(/^([a-zA-Z0-9])+([a-zA-Z0-9¥._-])*@([a-zA-Z0-9_-])+([a-zA-Z0-9¥._-]+)+$/)) {
+				if (mail4 != "" && !mail4.match(/^([a-zA-Z0-9])+([a-zA-Z0-9¥._-])*@([a-zA-Z0-9_-])+([a-zA-Z0-9¥._-]+)+$/)) {
 					$('#customer_mail_4').parent().append("<p class='error'>メールアドレスの形式が異なります</p>");
 				}
 				//後処理

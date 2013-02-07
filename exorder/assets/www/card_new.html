@@ -159,7 +159,8 @@
 					$("#card_holder").parent().append("<p class='error'>カード名義を入力してください。</p>");
 				}
 				//カード番号のチェック
-				if ($("#card_number").val() == "" || !$("#card_number").val().match(/^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6011[0-9]{12}|3(?:0[0-5]|[68][0-9])[0-9]{11}|3[47][0-9]{13}|35[0-9]{14})$/)) {
+				var card_number = $("#card_number").val().replace(/\s+$/, "");
+				if (card_number == "" || !card_number.match(/^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6011[0-9]{12}|3(?:0[0-5]|[68][0-9])[0-9]{11}|3[47][0-9]{13}|35[0-9]{14})$/)) {
 					$("#card_number").parent().append("<p class='error'>カード番号を正しく入力してください。</p>");
 				}
 				//有効期限のチェック
@@ -188,7 +189,8 @@
 				}
 
 				//セキュリティコードのチェック
-				if ($("#card_security_code").val() == "" || !$("#card_security_code").val().match(/^\d{3,5}$/)) {
+				var card_security_code = $("#card_security_code").val().replace(/\s+$/, "");
+				if (card_security_code == "" || !card_security_code.match(/^\d{3,5}$/)) {
 					$("#card_security_code").parent().append("<p class='error'>3～4桁の半角数字で入力してください</p>");
 				}
 				//後処理

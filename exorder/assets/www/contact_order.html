@@ -132,7 +132,7 @@
 				var qr_id = "";
 				var item_version = "";
 				var order_id = "";
-				var get = JSON.parse(setLocalStorage("contactParams"));
+				var get = JSON.parse(getLocalStorage("contactParams"));
 
 				if (get) {
 					// 販売者・商品 情報：qr_id, item_version
@@ -194,7 +194,7 @@
 
 			// alertCallBack -----------------------------------------------------------------------
 			function alertCallBack() {
-				window.location.href = 'show_order_item.html';
+				window.location.href = 'show_order.html';
 			}
 			
 			// navバーのbarcode選択でbarcode画面表示にフラグを切り替え

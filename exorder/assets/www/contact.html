@@ -137,21 +137,27 @@
 				var order_id = "";
 
 				// 情報取得
-				var order_id = getLocalStorage('order_id');
-				var contactParams = JSON.parse(getLocalStorage(contactParams));
+// DEL 130207
+//				var order_id = getLocalStorage('order_id');
+				var contactParams = JSON.parse(getLocalStorage('contactParams'));
+				console.log('contanct:contactParams: ' + JSON.stringify(contactParams));
 				var get = {};
 				get.qr_id = contactParams.qr_id;
 				get.item_version = contactParams.item_version;
 				get.customer_id = contactParams.customer_id;
-				get.order_id = order_id;
+				console.log('contanct:get: ' + JSON.stringify(get));
+// DEL 130207
+//				get.order_id = order_id;
 
 				if (get) {
 					// 販売者・商品 情報：qr_id, item_version
 					qr_id = get['qr_id'];
 					item_version = get['item_version'];
+/* DEL 130207
 					if (get['order_id']) {
 						order_id = get['order_id'];
 					}
+*/
 				}
 
 				// 内容の取得
@@ -177,18 +183,24 @@
 				params['url'] = $("#url").val();
 				params['http'] = $("#http").val();
 				params['https'] = $("#https").val();
+				
+				console.log('contanct:params: ' + JSON.stringify(params));
 
 				$.ajax({
 					type : "POST",
 					url : url,
 					data : params,
 					success : function(data) {
+						
+						console.log('contanct:data: ' + JSON.stringify(data));
+						
 						var message = 'お問い合わせ内容を送信しました';
 						var title = '送信完了';
 						var button = 'OK';
 						navigator.notification.alert(message, alertCallBack(), title, button);
 					},
 					error : function() {
+						console.log('contanct:error');
 						networkERR(alertCallBack, 'お問合せ出来ませんでした。');
 					}
 				});
@@ -197,7 +209,7 @@
 
 			// alertCallBack -----------------------------------------------------------------------
 			function alertCallBack() {
-				window.location.href = 'show_item.html';
+				window.location.href = 'show_order.html';
 			}
 			
 			// navバーのbarcode選択でbarcode画面表示にフラグを切り替え

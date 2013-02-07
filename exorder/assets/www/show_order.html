@@ -162,23 +162,32 @@
 				// 商品情報の有無で戻るボタンを表示・非表示
 				var barcodeParams = getLocalStorage('barcodeParams');
 				// 戻るボタン非表示
-				if ((barcodeParams == null || barcodeParams == "" || barcodeParams == {}) && before == 'barcode.html') {
+
+// EDIT 130207
+//				if ((barcodeParams == null || barcodeParams == "" || barcodeParams == {}) && before == 'barcode.html') {
+				var show_item_flg = getLocalStorage('show_item_flg');
+				if ((barcodeParams == null || barcodeParams == "" || barcodeParams == {}) || show_item_flg == 'false') {
 					$("#backb").css("display", "none");
 					document.addEventListener("backbutton", function() {
 						window.location.href = 'show_order.html';
 					}, false);
 				// 戻るボタン表示
-				} else if (before == 'barcode.html') {
+// EDIT 130207
+//				} else if (before == 'barcode.html') {
+				} else {
 					$("#backb").attr("href", "barcode.html");
+					$("#backb").html("商品"); // 130207
 					$("#backb").css("display", "block");
 					document.addEventListener("backbutton", function() {
 						window.location.href = 'barcode.html';
 					}, false);
+/* DEL 130207
 				} else {
 					setLocalStorage('show_oreder_flg', 'false');
 					document.addEventListener("backbutton", function() {
 						window.location.href = 'show_order.html';
 					}, false);
+*/
 				}
 
 				console.log('購入一覧表示:show_order_index:');
@@ -305,6 +314,8 @@
 
 				// 注文情報の表示
 				$("#order_indexs").html(order_indexs);
+				// INS 130207 リフレッシュ
+				$('.listview').listview();
 			}
 
 			// 注文詳細表示
@@ -400,6 +411,7 @@
 				// 商品詳細値をセット
 				setLocalStorage('paramsData', JSON.stringify(params));
 				// バックボタン設定
+				$("#backb").html("戻る"); // 130207
 				$("#backb").attr("href", "show_order.html").css("display", "none");
 				setLocalStorage('show_oreder_flg', 'false');
 				document.addEventListener("backbutton", function() {
@@ -582,9 +594,10 @@
 				document.addEventListener("backbutton", function() {
 					window.location.href = 'show_order.html';
 				}, false);
+				$("#backb").html("戻る"); // 130207
 				$("#backb").css("display", "block");
 			}
-
+/* 130207 DEL
 			// 特商ページ 130201 INS
 			function getProfile() {
 				// 購入詳細表示:true
@@ -616,6 +629,42 @@
 					}
 				}
 			}
+*/
+			// 特商ページ 130207 INS Start
+			function getProfile() {
+				var chNetwork = check_network();
+				if (chNetwork != "none") {
+					// 特商情報取得
+					var get = JSON.parse(getLocalStorage('barcodeParams'));
+					var filename = "http://exorder.jp/products/?page=profile&qr_id=" + String(get.qr_id);
+					// html取得
+					getIndex(filename);
+					function getIndex(filename) {
+						xmlhttp = new XMLHttpRequest();
+						if (xmlhttp) {
+							xmlhttp.onreadystatechange = check;
+							xmlhttp.open("GET", filename);
+							xmlhttp.send(null);
+						}
+					}
+
+					function check() {
+						if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+							document.getElementById("htmlProfile").innerHTML = xmlhttp.responseText;
+						}
+					}
+
+				} else {
+					var title = '現在表示できません'
+					var message = '通信環境が良くないため販売店情報を表示できませんでした';
+					navigator.notification.alert(message, errorAlert(), title, 'OK');
+					function errorAlert() {
+						console.log('chNetwork: ' + chNetwork);
+					}
+
+				}
+			}
+			// 特商ページ 130207 INS End
 
 			// キャンセル・再購入
 			function cancel_buy(operation) {
@@ -656,7 +705,7 @@
 			
 			// 特商から購入商品へ戻る
 			function pageItem(){
-	alert('backb');
+				alert('backb');
 				setLocalStorage('show_order_flg', 'true');
 				window.location.href = 'show_order.html';
 			}
@@ -760,7 +809,7 @@
 					<li class="shop_contact" id="order_shop_contact" ></li>
 
 					<li class="shop_neme">
-						<a href="#page_shopProfile" deta-transition="slide" onclick="javascript:getProfile();"> 販売者：<span id="company_name"></span>
+						<a href="#page_shopProfile" deta-transition="slidefade" onclick="javascript:getProfile();"> 販売者：<span id="company_name"></span>
 						<p class="txt">
 							販売者・特定商取引の詳細はこちら
 						</p> </a>

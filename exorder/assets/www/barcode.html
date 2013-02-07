@@ -322,8 +322,8 @@
 							url : url,
 							data : hash,
 							success : function(data) {
-								// 商品詳細
-								if (data != {} && data != null) {
+								// 商品詳細 130207 空白もチェックする
+								if (data != {} && data != null && data != '') {
 									// 商品情報をセット
 									setData(data);
 								} else {
@@ -588,12 +588,22 @@
 							// 合計金額をrelに、送料をrel2持たせる 130206 EDIT
 								amount += '<option value="' + String(i) + '" rel="' + goodsTotal + '" rel2="' + orderCarriage + '">' + String(i) + '</option>';
 							}
+
 							$('#order_amount').html(amount).selectmenu('refresh', true);
 							// 数量フラグ 非表示:0
+/*  DEL 130207 変更
 							if (params.amo_flg == 0) {
 								// 数量 非表示
 								$("#item_quantity").css('display', 'none');
 							}
+*/
+//  INS 130207 Start
+							if (params.amo_flg == 0) {
+								// 数量 非表示
+									var item_quantity = "<div class='inner'><div date-role='fieldcontain'><p>　　　</p></div></div><hidden name='order_amount' value=1 />";
+									$("#item_quantity").html(item_quantity);
+							}
+//  INS 130207 End
 
 						} else {
 							// 販売できない場合
@@ -619,8 +629,12 @@
 							$('#btn_flg').html("購入する");
 							$('#btn_flg2').html("購入する");
 						} else if (params.btn_flg == 2) {
-							$('#btn_flg').html("申し込む");
-							$('#btn_flg2').html("申し込む");
+// 130207 ボタン名を取得するよう修正
+//							$('#btn_flg').html("申し込む");
+//							$('#btn_flg2').html("申し込む");String
+							$('#btn_flg').html(String(params.btn_name));
+							$('#btn_flg2').html(String(params.btn_name));
+
 						}
 
 						// 削除ボタン表示
@@ -762,8 +776,13 @@
 				total = goodsTotal + carriage + commission;
 				// 合計金額タイトルの表示
 				$("#total_price_text").text(totalTitle);
-				// 送料表示
-				$('#shippingCost').html(htmlCarriage);
+
+				// 送料表示するの場合のみ INS 130207
+				if (params.ship_flg == 1) {
+					// 送料表示
+					$('#shippingCost').html(htmlCarriage);
+				}
+
 				// 代引き手数料表示
 				$("#pay_cod_cost").html(htmlCommission);
 				// 合計金額表示
@@ -1025,7 +1044,7 @@
 							}
 						}
 						// 注文情報の消去
-						delFile('order_params');
+//						delFile('order_params'); // DEL 130207
 					},
 					error : function(data) {
 						console.log('setOrder:通信エラー');
@@ -1059,6 +1078,11 @@
 				initOrderInfo();
 				// 購入履歴表示
 				setLocalStorage('show_order_flg', 'false');
+				// 130207 INS Start 商品情報削除
+				delFile('barcodeParams');
+				setLocalStorage('show_item_flg', 'false');
+				// 130207 INS END
+
 				window.location.href = 'show_order.html';
 			}
 
@@ -1212,6 +1236,8 @@
 			// 商品データ削除
 			function deleteParams() {
 				delFile('barcodeParams');
+				// 130207 INS
+				setLocalStorage('show_item_flg', 'false');
 				setLocalStorage('before', 'setting.html');
 				window.location.href = 'setting.html';
 			}
@@ -1355,7 +1381,8 @@
 					<!-- 販売者 -->
 					<li class="shop_neme">
 						<!--<a href="show_shop_info.html" deta-transition="slide" data-ajax="false" onclick="javascript:getProfile();"> 販売者：<span id="company_name"></span>-->
-						<a href="#page_shopProfile"  deta-transition="slidefade" data-ajax="false" onclick="javascript:getProfile();"> 販売者：<span id="company_name"></span>
+						<!-- EDIT 130207 -->
+						<a href="#page_shopProfile"  deta-transition="slidefade" onclick="javascript:getProfile();"> 販売者：<span id="company_name"></span>
 						<p class="txt">
 							販売者・特定商取引の詳細はこちら
 						</p> </a>
