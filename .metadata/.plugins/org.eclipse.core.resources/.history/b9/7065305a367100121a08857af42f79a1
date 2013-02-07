@@ -176,7 +176,7 @@
 //				} else if (before == 'barcode.html') {
 				} else {
 					$("#backb").attr("href", "barcode.html");
-					$("#backbMoji").html("商品"); // 130207
+					$("#backb").html("商品"); // 130207
 					$("#backb").css("display", "block");
 					document.addEventListener("backbutton", function() {
 						window.location.href = 'barcode.html';
@@ -411,7 +411,7 @@
 				// 商品詳細値をセット
 				setLocalStorage('paramsData', JSON.stringify(params));
 				// バックボタン設定
-				$("#backbMoji").html("戻る"); // 130207
+				$("#backb").html("戻る"); // 130207
 				$("#backb").attr("href", "show_order.html").css("display", "none");
 				setLocalStorage('show_oreder_flg', 'false');
 				document.addEventListener("backbutton", function() {
@@ -465,25 +465,25 @@
 
 				// 支払いステータス
 				//	if(){
-				var item_pay_sts = '';
+				item_pay_sts = '';
 				//	params.pay_cod = 1; // test
 				//	params.ordercommission = 315; // test
-				if (params['pay_card'] == 1) {
+				if (params.pay_card == 1) {
 					// カード払い
 					item_pay_sts = '<p class="ico ico_onlyRemaining">カード払い</p>';
-				} else if (params['pay_cod'] == 1) {
+				} else if (params.pay_cod == 1) {
 					// 代引き
 					item_pay_sts = '<p class="ico ico_onlyRemaining">代金引換</p>';
 				}
 				if (item_pay_sts != '') {
-					$("#item_pay_sts").html(item_pay_sts);
+					document.getElementById("item_pay_sts").innerHTML = item_pay_sts;
 					// 代引き手数料
-					if (params['ordercommission'] && parseInt(params['ordercommission']) > 0) {
+					if (params.ordercommission && parseInt(params.ordercommission) > 0) {
 						var pay_codCost = '<span>手数料 ';
-						pay_codCost += currency(params['ordercommission']) + '円</span>';
+						pay_codCost += currency(params.ordercommission) + '円</span>';
 						$("#pay_cod_cost").html(pay_codCost);
 					} else {
-						params['ordercommission'] = 0;
+						params.ordercommission = 0;
 					}
 				}
 				//	}
@@ -594,7 +594,7 @@
 				document.addEventListener("backbutton", function() {
 					window.location.href = 'show_order.html';
 				}, false);
-				$("#backbMoji").html("戻る"); // 130207
+				$("#backb").html("戻る"); // 130207
 				$("#backb").css("display", "block");
 			}
 /* 130207 DEL
@@ -720,7 +720,7 @@
 
 			<div data-role="header" id="header" data-position="fixed">
 				<h1 id='pageTitle'>購入履歴</h1>
-				<a id="backb" href="#" class="ui-btn-left" data-icon="arrow-l" data-direction="reverse" data-ajax="false" style="display: none;"><span id="backbMoji">戻る</span></a>
+				<a id="backb" href="#" class="ui-btn-left" data-icon="arrow-l" data-direction="reverse" data-ajax="false" style="display: none;"> 戻る </a>
 				<a href="website.html" class="ui-btn-right" data-icon="info" data-direction="reverse" data-ajax="false"> 使い方</a>
 			</div>
 			<!-- loading -->
@@ -796,8 +796,6 @@
 								</dl>
 								<!-- 送料 -->
 								<div id="order_shippingCost"></div>
-								<!-- 支払い方法 -->
-								<div id="item_pay_sts"></div>
 							</div>
 						</div>
 					</li>

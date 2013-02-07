@@ -796,8 +796,6 @@
 								</dl>
 								<!-- 送料 -->
 								<div id="order_shippingCost"></div>
-								<!-- 支払い方法 -->
-								<div id="item_pay_sts"></div>
 							</div>
 						</div>
 					</li>

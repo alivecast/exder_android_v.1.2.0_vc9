@@ -476,7 +476,7 @@
 					item_pay_sts = '<p class="ico ico_onlyRemaining">代金引換</p>';
 				}
 				if (item_pay_sts != '') {
-					$("#item_pay_sts").html(item_pay_sts);
+					document.getElementById("item_pay_sts").innerHTML = item_pay_sts;
 					// 代引き手数料
 					if (params['ordercommission'] && parseInt(params['ordercommission']) > 0) {
 						var pay_codCost = '<span>手数料 ';
@@ -796,8 +796,6 @@
 								</dl>
 								<!-- 送料 -->
 								<div id="order_shippingCost"></div>
-								<!-- 支払い方法 -->
-								<div id="item_pay_sts"></div>
 							</div>
 						</div>
 					</li>
