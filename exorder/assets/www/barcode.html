@@ -99,6 +99,8 @@
 							window.location.href = 'setting.html';
 							// 読み取り成功
 						} else {
+							// BEEP音
+							navigator.notification.beep(1);
 							// 計測用
 							setLocalStorage('time', parseInt(new Date().getTime()));
 							// exorderを含むか判定
@@ -837,146 +839,155 @@
 				// 読み込み：成功
 				function getonOrderingOK(json) {
 
-					// 注文一時情報にorder_time,order_amountを追加 3
-					var order_params = JSON.parse(getLocalStorage('order_params'));
-					// 注文数量の取得
-					order_params['order_amount'] = document.getElementById('order_amount').value;
-					// 注文情報の一時保存
-					setLocalStorage('order_params', JSON.stringify(order_params));
+					// 購入時の暗証番号入力フラグ判定
+					var inputPasscode = getLocalStorage('inputPasscode');
 
-					// 購入ボタンをクリックフラッグ２つ　130206 INS
-					setLocalStorage('purchased_item_flg', 'ordered');
+					if (inputPasscode == 'true') {
+						// 暗証番号入力する
+						var passTime = parseInt(getLocalStorage('passTime'));
+						var nowTime = parseInt(new Date() / 1000);
+						var overTime = 60 * 60;
+						if (nowTime - passTime > overTime) {
+							// 前回操作から時間が経過 + 暗証番号入力していない
+							// 暗証番号入力する
+							$("#popupForm").trigger('click');
+						} else {
+							// 前回操作から時間が経過していない || 前回操作から時間が経過 + 暗証番号入力済み
+							getonOrderingOK2(json);
+						}
+					} else {
+						// 暗証番号入力しない
+							getonOrderingOK2(json);
+					}
+				}
+			}// order
 
-					// 設定済み判定
-					var url = json.http + 'json/send_setup.php';
-					$.ajax({
-						type : "POST",
-						url : url,
-						data : json,
-						success : function(data) {
-							var title = '初期設定';
-							var message = '';
-							var button = 'OK';
-							// 設定済み
-							if (data.setup_ok == 1) {
-								// 暗証番号入力済みか判定へ
-								chPasscode(json);
-							} else if (data.password_ck == 0) {
-								console.log("-- 暗証番号--");
-								message = '１．暗証番号を設定してください。';
-								navigator.notification.alert(message, passcodeAlert, title, button);
-								function passcodeAlert() {
-									window.location.href = "passcode_new.html";
-								}
+			function getonOrderingOK2(json){
+				// 注文一時情報にorder_time,order_amountを追加 3
+				var order_params = JSON.parse(getLocalStorage('order_params'));
+				// 注文数量の取得
+				order_params['order_amount'] = document.getElementById('order_amount').value;
+				// 注文情報の一時保存
+				setLocalStorage('order_params', JSON.stringify(order_params));
 
-							} else if (data.customer_ck == 0) {
-								console.log("-- 利用者情報・お届け先 --");
-								message = '２．あなた様のお名前やご住所を設定してください。';
-								navigator.notification.alert(message, orderingAlert, title, button);
-								function orderingAlert() {
-									window.location.href = "ordering_new.html";
-								}
+				// 購入ボタンをクリックフラッグ２つ　130206 INS
+				setLocalStorage('purchased_item_flg', 'ordered');
 
-							} else if (data.address_ck == 0) {
-								console.log("-- お届け先 --");
-								message = '３．お届け先のお名前やご住所を設定してください。';
-								navigator.notification.alert(message, addresseeAlert, title, button);
-								function addresseeAlert() {
-									window.location.href = "addressee_new.html";
-								}
+				// 設定済み判定
+				var url = json.http + 'json/send_setup.php';
+				$.ajax({
+					type : "POST",
+					url : url,
+					data : json,
+					success : function(data) {
+						var title = '初期設定';
+						var message = '';
+						var button = 'OK';
+						// 設定済み
+						if (data.setup_ok == 1) {
+							// 暗証番号入力済みか判定へ
+							order2(json);
+						} else if (data.password_ck == 0) {
+							console.log("-- 暗証番号--");
+							message = '１．暗証番号を設定してください。';
+							navigator.notification.alert(message, passcodeAlert, title, button);
+							function passcodeAlert() {
+								window.location.href = "passcode_new.html";
+							}
 
-							} else if (data.card_ck == 0) {
-								// カード払い
+						} else if (data.customer_ck == 0) {
+							console.log("-- 利用者情報・お届け先 --");
+							message = '２．あなた様のお名前やご住所を設定してください。';
+							navigator.notification.alert(message, orderingAlert, title, button);
+							function orderingAlert() {
+								window.location.href = "ordering_new.html";
+							}
+
+						} else if (data.address_ck == 0) {
+							console.log("-- お届け先 --");
+							message = '３．お届け先のお名前やご住所を設定してください。';
+							navigator.notification.alert(message, addresseeAlert, title, button);
+							function addresseeAlert() {
+								window.location.href = "addressee_new.html";
+							}
+
+						} else if (data.card_ck == 0) {
+							// カード払い
 // 130206 DEL
 //								var show_item_params = getLocalStorage('show_item_params');
 // 130206 INS Start
-								var paramsText = getLocalStorage('show_item_params');
-								var show_item_params = JSON.parse(paramsText);
+							var paramsText = getLocalStorage('show_item_params');
+							var show_item_params = JSON.parse(paramsText);
 // 130206 INS End
-								if ( show_item_params.pay_card && show_item_params.pay_card == 1 ) {
-									console.log("-- カード--");
-									message = '４．お支払いに使うクレジットカード情報を設定してください。クレジットカードはご本人様（個人設定にて設定したお名前・ご住所）のカード以外はご利用いただけません。';
-									navigator.notification.alert(message, cardAlert, title, button);
-									function cardAlert() {
-										window.location.href = "card_new.html";
-									}
-
-								} else {
-									// 代引き
-									// 暗証番号入力済みか判定へ
-									chPasscode(json);
+							if ( show_item_params.pay_card && show_item_params.pay_card == 1 ) {
+								console.log("-- カード--");
+								message = '４．お支払いに使うクレジットカード情報を設定してください。クレジットカードはご本人様（個人設定にて設定したお名前・ご住所）のカード以外はご利用いただけません。';
+								navigator.notification.alert(message, cardAlert, title, button);
+								function cardAlert() {
+									window.location.href = "card_new.html";
 								}
 
 							} else {
-								console.log("-- エラー１: 設定がない--");
-								message = '１．暗証番号を設定してください。';
-								navigator.notification.alert(message, etcAlert, title, button);
-								function etcAlert() {
-									window.location.href = "passcode_new.html";
-								}
-
+								// 代引き
+								order2(json);
 							}
-						},
-						error : function(data) {
-							console.log("-- エラー２: 設定がない--");
-							title = "初期設定";
-							var message = '１．暗証番号を設定してください。';
-							navigator.notification.alert(message, etcAlert, title, 'OK');
+
+						} else {
+							console.log("-- エラー１: 設定がない--");
+							message = '１．暗証番号を設定してください。';
+							navigator.notification.alert(message, etcAlert, title, button);
 							function etcAlert() {
 								window.location.href = "passcode_new.html";
 							}
 
 						}
-					});
-				}
+					},
+					error : function(data) {
+						console.log("-- エラー２: 設定がない--");
+						title = "初期設定";
+						var message = '１．暗証番号を設定してください。';
+						navigator.notification.alert(message, etcAlert, title, 'OK');
+						function etcAlert() {
+							window.location.href = "passcode_new.html";
+						}
 
-			}// order
-
-			// 暗証番号入力済みか判定
-			function chPasscode(json) {
-				// 購入時の暗証番号入力フラグ判定
-				var inputPasscode = getLocalStorage('inputPasscode');
-
-/* EDIT 130206 DEL
-				// 暗証番号入力通過フラグ:true 暗証番号入力済み
-				var inputedPass = getLocalStorage('inputedPass');
-				if (inputPasscode == 'true' && inputedPass == 'false') {
-					// 暗証番号入力する
-					$("#popupForm").trigger('click');
-				} else {
-					// 暗証番号入力しない
-					var passTime = parseInt(getLocalStorage('passTime'));
-					var nowTime = parseInt(new Date() / 1000);
-					var overTime = 60 * 60;
-					if (nowTime - passTime > overTime && inputedPass == 'false') {
-						// 前回操作から時間が経過 + 暗証番号入力していない
-						// 暗証番号入力する
-						$("#popupForm").trigger('click');
-					} else {
-						// 前回操作から時間が経過していない || 前回操作から時間が経過 + 暗証番号入力済み
-						order2();
 					}
-*/
-// EDIT 130206 INS Start
-				if (inputPasscode == 'true') {
-					// 暗証番号入力する
-					var passTime = parseInt(getLocalStorage('passTime'));
-					var nowTime = parseInt(new Date() / 1000);
-					var overTime = 60 * 60;
-					if (nowTime - passTime > overTime) {
-						// 前回操作から時間が経過 + 暗証番号入力していない
-						// 暗証番号入力する
-						$("#popupForm").trigger('click');
-					} else {
-						// 前回操作から時間が経過していない || 前回操作から時間が経過 + 暗証番号入力済み
-						order2();
-					}
-				} else {
-					// 暗証番号入力しない
-						order2();
-				}
+				});
 			}
-// EDIT 130206 INS End
+
+
+			// 暗証番号のチェック
+			function eqPass() {
+				// 設定の読み込み
+				getFile('ordering', eqPassOK, eqPassNG);
+				// 読み込み:失敗
+				function eqPassNG() {
+					window.location.href = "index.html";
+				}
+
+				// 読み込み:成功
+				function eqPassOK(json) {
+					// 入力値
+					var ckPass1 = String($("#customer_pass").val());
+					var ckPass2 = String(json.customer_pass);
+					// 入力値のチェック
+					if (ckPass1 != ckPass2) {
+						var message = '暗証番号が違います';
+						var title = 'エラー';
+						var button = 'OK';
+						navigator.notification.alert(message, function() {
+							$("#customer_pass").val('');
+						}, title, button);
+						return false;
+
+						// 入力値が合っている
+					} else {
+						// 注文処理へ
+						getonOrderingOK2();
+					}
+				}
+
+			}//eqPass
 
 			// 注文処理
 			function order2() {
@@ -1074,57 +1085,31 @@
 					navigator.notification.confirm(message, function(buttonIndex) {
 						if (buttonIndex == 1) {
 							setLocalStorage('cancelAttention', 'enable');
+							afterConfirm();
 						} else {
 							setLocalStorage('cancelAttention', 'disable');
+							afterConfirm();
 						}
 					}, title, button);
+				} else {
+					afterConfirm();
 				}
-				// 購入ボタンのクリックフラグをリセット
-				setLocalStorage('purchased_item_flg', '');
-				setLocalStorage('kbn', '');
-				// 注文情報の初期化
-				initOrderInfo();
-				// 購入履歴表示
-				setLocalStorage('show_order_flg', 'false');
-				// 130207 INS Start 商品情報削除
-				delFile('barcodeParams');
-				setLocalStorage('show_item_flg', 'false');
-				// 130207 INS END
-
-				window.location.href = 'show_order.html';
+				// 確認後の処理
+				function afterConfirm(){
+					// 購入ボタンのクリックフラグをリセット
+					setLocalStorage('purchased_item_flg', '');
+					setLocalStorage('kbn', '');
+					// 注文情報の初期化
+					initOrderInfo();
+					// 購入履歴表示
+					setLocalStorage('show_order_flg', 'false');
+					// 130207 INS Start 商品情報削除
+					delFile('barcodeParams');
+					setLocalStorage('show_item_flg', 'false');
+					// 130207 INS END
+					window.location.href = 'show_order.html';
+				}
 			}
-
-			// 暗証番号のチェック
-			function eqPass() {
-				// 設定の読み込み
-				getFile('ordering', getonOrderingOK, getonOrderingNG);
-				// 読み込み:失敗
-				function getonOrderingNG() {
-					window.location.href = "index.html";
-				}
-
-				// 読み込み:成功
-				function getonOrderingOK(json) {
-					// 入力値
-					var ckPass1 = String($("#customer_pass").val());
-					var ckPass2 = String(json.customer_pass);
-					// 入力値のチェック
-					if (ckPass1 != ckPass2) {
-						var message = '暗証番号が違います';
-						var title = 'エラー';
-						var button = 'OK';
-						navigator.notification.alert(message, function() {
-							$("#customer_pass").val('');
-						}, title, button);
-						return false;
-						// 入力値が合っている
-					} else {
-						// 注文処理へ
-						order2();
-					}
-				}
-
-			}//eqPass
 
 			// カード情報エラー
 			function cardErrMsg(msg) {
@@ -1152,6 +1137,54 @@
 				}
 
 			}
+
+/*
+			// 暗証番号入力済みか判定
+			function chPasscode(json) {
+				// 購入時の暗証番号入力フラグ判定
+				var inputPasscode = getLocalStorage('inputPasscode');
+
+// EDIT 130206 DEL
+				// 暗証番号入力通過フラグ:true 暗証番号入力済み
+//				var inputedPass = getLocalStorage('inputedPass');
+//				if (inputPasscode == 'true' && inputedPass == 'false') {
+					// 暗証番号入力する
+//					$("#popupForm").trigger('click');
+//				} else {
+					// 暗証番号入力しない
+//					var passTime = parseInt(getLocalStorage('passTime'));
+//					var nowTime = parseInt(new Date() / 1000);
+//					var overTime = 60 * 60;
+//					if (nowTime - passTime > overTime && inputedPass == 'false') {
+						// 前回操作から時間が経過 + 暗証番号入力していない
+						// 暗証番号入力する
+//						$("#popupForm").trigger('click');
+//					} else {
+						// 前回操作から時間が経過していない || 前回操作から時間が経過 + 暗証番号入力済み
+//						order2();
+//					}
+
+// EDIT 130206 INS Start
+				if (inputPasscode == 'true') {
+					// 暗証番号入力する
+					var passTime = parseInt(getLocalStorage('passTime'));
+					var nowTime = parseInt(new Date() / 1000);
+					var overTime = 60 * 60;
+					if (nowTime - passTime > overTime) {
+						// 前回操作から時間が経過 + 暗証番号入力していない
+						// 暗証番号入力する
+						$("#popupForm").trigger('click');
+					} else {
+						// 前回操作から時間が経過していない || 前回操作から時間が経過 + 暗証番号入力済み
+						order2();
+					}
+				} else {
+					// 暗証番号入力しない
+						order2();
+				}
+			}
+// EDIT 130206 INS End
+*/
 
 			// setting.htmlへ
 			function settingCallBack() {
@@ -1418,24 +1451,25 @@
 
 					<!-- 暗証番号入力 -->
 					<li style="display: none;">
+						<a id="popupForm" href="#popupLogin" data-rel="dialog" data-transition="slideup">　</a>
+<!-- DEL 130208
 						<a id="popupForm" href="#popupLogin" data-rel="popup" data-position-to="window" data-role="button" data-inline="true" data-transition="pop">a</a>
-						<div data-role="popup" data-overlay-theme="a" data-theme="a" id="popupLogin" class="ui-corner-all" style="max-width:480px; position:absolute; top:10px;">
-<!-- TEST
+						<div data-role="popup" data-overlay-theme="a" data-theme="a" id="popupLogin" class="ui-corner-all" style="max-width:480px;">
+
 							<div class="page_description">
 								<div class="txt">
 									暗証番号を入力してください
 								</div>
 							</div>
--->
+
 							<div id="form_password">
 								<input type="hidden" id="customer_passT" name="customer_passT" value=""/>
 
 								<div data-role="fieldcontain" style="padding: 10px;">
-<!-- TEST
+
 									<label for="customer_pass" class="fieldLabel">暗証番号<span class="form_note">(数字4～16桁)</span></label>
 									<input type="password" autocomplete="off" id="customer_pass" name="customer_pass" value="" maxlength=16 placeholder="数字4～16桁" />
--->
-									<input type="password" autocomplete="off" id="customer_pass" name="customer_pass" value="" maxlength=16 placeholder="暗証番号を入力" />
+
 									<div data-role="content" data-theme="a" class="ui-corner-bottom ui-content" style="margin-top: 10px;">
 										<a href="#" data-role="button" data-inline="true" data-transition="flow" data-theme="b" id="btnOrder" class="btn_next" onclick="eqPass();">購入する</a>
 										<a href="#" data-role="button" data-inline="true" data-rel="back" data-theme="c" id="popupClose" onclick="javascript:setLocalStorage('purchased_item_flg', '');">閉じる</a>
@@ -1444,10 +1478,11 @@
 									<div class="txt" style="margin-top: 30px;">
 										<a href="passcode_hint.html" data-ajax="false">暗証番号を忘れた方はコチラ</a>
 									</div>
-
 								</div>
 							</div>
 						</div>
+-->
+
 					</li>
 				</ul>
 			</div>
@@ -1486,6 +1521,20 @@
 			</div>
 			<!-- コンテンツここから-->
 			<div id="htmlShipping"></div>
+		</div>
+
+		<!-- 暗証番号 130208 TEST -->
+		<div id="popupLogin" data-role="page" data-theme="b">
+			<!-- コンテンツここから-->
+			<div data-role="content">
+				<p>操作を続けるには、暗証番号を入力してください</p>
+				<input type="password" autocomplete="off" id="customer_pass" name="customer_pass" value="" maxlength=16 placeholder="暗証番号を入力" autofocus="autofocus" />
+				<a href="#" data-role="button" data-inline="true" data-transition="flow" data-theme="b" id="btnOrder" class="btn_next" onclick="eqPass();"><span id="btnOrderMoji">購入する</span></a>
+				<a href="#" data-role="button" data-inline="true" data-rel="back" data-theme="c" id="popupClose" onclick="javascript:setLocalStorage('purchased_item_flg', '');">閉じる</a>
+				<div class="txt" style="margin-top: 30px;">
+					<p><a href="passcode_hint.html" data-ajax="false">暗証番号を忘れた方はコチラ</a><p>
+				</div>
+			</div>
 		</div>
 
 	</body>

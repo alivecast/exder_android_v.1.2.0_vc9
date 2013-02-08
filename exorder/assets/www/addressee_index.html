@@ -100,6 +100,16 @@
 			//			$("#tab3a").attr("href", "order.html");
 					}
 				}
+
+				// INS 130208 リダイレクト先
+				var show_item_flg      = getLocalStorage('show_item_flg');  // 商品情報があるかどうか
+				var purchased_item_flg = getLocalStorage('purchased_item_flg'); // オーダー処理中かどうか
+				if ((barcodeParams == null || barcodeParams == "" || barcodeParams == {}) || show_item_flg == 'false' || purchased_item_flg == 'ordered'){
+				}else{
+					$("#backb").attr("href", "barcode.html");
+				}
+
+
 				onReadyFile();
 			}
 
