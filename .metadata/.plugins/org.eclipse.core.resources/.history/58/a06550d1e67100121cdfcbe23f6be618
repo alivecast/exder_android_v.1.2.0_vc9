@@ -460,21 +460,16 @@
 				if (cancelAttention == 'enable') {
 					// confirmバージョン
 					var message = 'ご購入をキャンセルされる場合は、30分以内にお願いいたします。';
-					var title = 'ご注文を受付いたしました。';
-					var button = "OK,次回表示しない";
+					var title   = 'ご注文を受付いたしました。';
+					var button  = "OK,次回表示しない";
 					navigator.notification.confirm(message, function(buttonIndex) {
 						if (buttonIndex == 1) {
 							setLocalStorage('cancelAttention', 'enable');
-							afterConfirm();
 						} else {
 							setLocalStorage('cancelAttention', 'disable');
-							afterConfirm();
 						}
 					}, title, button);
-				} else {
-					afterConfirm();
 				}
-				function afterConfirm(){
 				// 購入ボタンのクリックフラグをリセット
 				setLocalStorage('purchased_item_flg', '');
 				setLocalStorage('kbn', '');
@@ -482,12 +477,13 @@
 				initOrderInfo();
 				// 購入履歴表示
 				setLocalStorage('show_order_flg', 'false');
+
 				// 130207 INS Start 商品情報削除
 				delFile('barcodeParams');
 				setLocalStorage('show_item_flg', 'false');
 				// 130207 INS END
+
 				window.location.href = 'show_order.html';
-				}
 			}
 
 			// 暗証番号のチェック

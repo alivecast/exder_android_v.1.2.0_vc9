@@ -474,19 +474,20 @@
 				} else {
 					afterConfirm();
 				}
+				// 確認後の処理
 				function afterConfirm(){
-				// 購入ボタンのクリックフラグをリセット
-				setLocalStorage('purchased_item_flg', '');
-				setLocalStorage('kbn', '');
-				// 注文情報の初期化
-				initOrderInfo();
-				// 購入履歴表示
-				setLocalStorage('show_order_flg', 'false');
-				// 130207 INS Start 商品情報削除
-				delFile('barcodeParams');
-				setLocalStorage('show_item_flg', 'false');
-				// 130207 INS END
-				window.location.href = 'show_order.html';
+					// 購入ボタンのクリックフラグをリセット
+					setLocalStorage('purchased_item_flg', '');
+					setLocalStorage('kbn', '');
+					// 注文情報の初期化
+					initOrderInfo();
+					// 購入履歴表示
+					setLocalStorage('show_order_flg', 'false');
+					// 130207 INS Start 商品情報削除
+					delFile('barcodeParams');
+					setLocalStorage('show_item_flg', 'false');
+					// 130207 INS END
+					window.location.href = 'show_order.html';
 				}
 			}
 
@@ -519,7 +520,6 @@
 						// 商品情報の有無 ordered:商品詳細画面で購入ボタンが押された
 						var purchased_item_flg = getLocalStorage('purchased_item_flg');
 						if (purchased_item_flg == 'ordered') {
-							$('.ui-dialog').dialog('close');  // ダイアログを閉じる
 							// 注文処理へ
 							order2();
 						} else {
@@ -731,8 +731,8 @@
 
 					<!-- 暗証番号入力 -->
 					<li style="display: none;">
-						<a id="popupForm" href="#popupLogin" data-rel="dialog" data-transition="pop">　</a>
-<!-- DEL 130208
+						<a id="popupForm" href="#popupLogin" data-rel="dialog" data-transition="slideup">--</a>
+<!-- TEST
 						<a id="popupForm" href="#popupLogin" data-rel="popup" data-position-to="window" data-role="button" data-inline="true" data-transition="pop">a</a>
 
 						<div data-role="popup" data-overlay-theme="a" data-theme="a" id="popupLogin" class="ui-corner-all" style="max-width:480px;">

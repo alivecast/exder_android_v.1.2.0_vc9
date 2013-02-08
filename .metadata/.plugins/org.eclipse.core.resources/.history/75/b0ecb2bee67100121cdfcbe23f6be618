@@ -1086,16 +1086,11 @@
 					navigator.notification.confirm(message, function(buttonIndex) {
 						if (buttonIndex == 1) {
 							setLocalStorage('cancelAttention', 'enable');
-							afterConfirm();
 						} else {
 							setLocalStorage('cancelAttention', 'disable');
-							afterConfirm();
 						}
 					}, title, button);
-				} else {
-					afterConfirm();
 				}
-				function afterConfirm(){
 				// 購入ボタンのクリックフラグをリセット
 				setLocalStorage('purchased_item_flg', '');
 				setLocalStorage('kbn', '');
@@ -1107,8 +1102,8 @@
 				delFile('barcodeParams');
 				setLocalStorage('show_item_flg', 'false');
 				// 130207 INS END
+
 				window.location.href = 'show_order.html';
-				}
 			}
 
 			// カード情報エラー

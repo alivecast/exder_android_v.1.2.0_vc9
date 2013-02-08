@@ -60,6 +60,12 @@
 
 				$('#loading').css('display', 'block');
 
+				// INS 130208 リダイレクト先
+				var purchased_item_flg = getLocalStorage('purchased_item_flg'); // オーダー処理中かどうか
+				if (purchased_item_flg == 'ordered'){
+					$("#submMoji").text("購入する");
+				}
+
 				// 戻るURLの初期設定
 				var before = getLocalStorage('before');
 				setLocalStorage('before', 'card_new.html');
@@ -447,7 +453,7 @@
 
 							<li class="item_buy_1btn btn_txt_ow">
 								<div>
-								<a class="btn_next" data-role="button" onClick="checkValidate();">登録する</a>
+								<a class="btn_next" data-role="button" onClick="checkValidate();"><span id="submMoji">登録する</span></a>
 								</div>
 								<!-- <input type="submit" class="btn_next" value="登録する"/> -->
 							</li>

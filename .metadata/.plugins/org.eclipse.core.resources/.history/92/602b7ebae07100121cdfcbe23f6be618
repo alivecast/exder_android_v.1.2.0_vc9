@@ -99,6 +99,8 @@
 							window.location.href = 'setting.html';
 							// 読み取り成功
 						} else {
+							// BEEP音
+							navigator.notification.beep(1);
 							// 計測用
 							setLocalStorage('time', parseInt(new Date().getTime()));
 							// exorderを含むか判定
@@ -980,11 +982,8 @@
 
 						// 入力値が合っている
 					} else {
-						$('.ui-dialog').dialog('close');  // ダイアログを閉じる
-						// passTime更新
-						setLocalStorage('passTime', parseInt(new Date() / 1000));
 						// 注文処理へ
-						getonOrderingOK2(json);
+						getonOrderingOK2();
 					}
 				}
 
@@ -1095,19 +1094,20 @@
 				} else {
 					afterConfirm();
 				}
+				// 確認後の処理
 				function afterConfirm(){
-				// 購入ボタンのクリックフラグをリセット
-				setLocalStorage('purchased_item_flg', '');
-				setLocalStorage('kbn', '');
-				// 注文情報の初期化
-				initOrderInfo();
-				// 購入履歴表示
-				setLocalStorage('show_order_flg', 'false');
-				// 130207 INS Start 商品情報削除
-				delFile('barcodeParams');
-				setLocalStorage('show_item_flg', 'false');
-				// 130207 INS END
-				window.location.href = 'show_order.html';
+					// 購入ボタンのクリックフラグをリセット
+					setLocalStorage('purchased_item_flg', '');
+					setLocalStorage('kbn', '');
+					// 注文情報の初期化
+					initOrderInfo();
+					// 購入履歴表示
+					setLocalStorage('show_order_flg', 'false');
+					// 130207 INS Start 商品情報削除
+					delFile('barcodeParams');
+					setLocalStorage('show_item_flg', 'false');
+					// 130207 INS END
+					window.location.href = 'show_order.html';
 				}
 			}
 
@@ -1451,7 +1451,7 @@
 
 					<!-- 暗証番号入力 -->
 					<li style="display: none;">
-						<a id="popupForm" href="#popupLogin" data-rel="dialog" data-transition="pop">　</a>
+						<a id="popupForm" href="#popupLogin" data-rel="dialog" data-transition="slideup">　</a>
 <!-- DEL 130208
 						<a id="popupForm" href="#popupLogin" data-rel="popup" data-position-to="window" data-role="button" data-inline="true" data-transition="pop">a</a>
 						<div data-role="popup" data-overlay-theme="a" data-theme="a" id="popupLogin" class="ui-corner-all" style="max-width:480px;">

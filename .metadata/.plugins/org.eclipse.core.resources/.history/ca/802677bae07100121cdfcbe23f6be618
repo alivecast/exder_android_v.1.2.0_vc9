@@ -334,11 +334,11 @@
 							// INS 130208 リダイレクト先
 							var show_item_flg      = getLocalStorage('show_item_flg');  // 商品情報があるかどうか
 							var purchased_item_flg = getLocalStorage('purchased_item_flg'); // オーダー処理中かどうか
-							// リダイレクト
-							if (show_item_flg == 'true' && purchased_item_flg != 'ordered'){
-								window.location.href = "barcode.html";
-							}else{
+							if ((barcodeParams == null || barcodeParams == "" || barcodeParams == {}) || show_item_flg == 'false' || purchased_item_flg == 'ordered'){
+								// リダイレクト
 								window.location.href = "addressee_index.html";
+							}else{
+								window.location.href = "barcode.html";
 							}
 						},
 						error : function() {
