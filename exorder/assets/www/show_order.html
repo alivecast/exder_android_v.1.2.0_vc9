@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title></title>
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+		<meta charset="utf-8">
+
+		<!-- iPad/iPhone specific css below, add after your main css >
+		<link rel="stylesheet" media="only screen and (max-device-width: 1024px)" href="ipad.css" type="text/css" />
+		<link rel="stylesheet" media="only screen and (max-device-width: 480px)" href="iphone.css" type="text/css" />
+		-->
+
+		<link rel="stylesheet" href="js/jquery.mobile-1.2.0.min.css" type="text/css" />
+		<link rel="stylesheet" href="css/iphone.css" type="text/css" />
+		<link rel="stylesheet" href="css/android.css" type="text/css" />
+
+		<script type="text/javascript" charset="utf-8" src="js/jquery-1.8.2.min.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/base64.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/aes.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/cordova.js"></script>
+		<script type="text/javascript" charset="utf-8" src="js/main.js"></script>
+		<script src="js/spin.min.js" type="text/javascript"></script>
+		<script type="text/javascript" charset="utf-8" src="js/jquery.mobile-1.2.0.min.js"></script>
+
+		<script type="text/javascript">
+			$(document).bind("mobileinit", function() {
+				// jQuery Mobile フレームワークの設定変更は、ここで行なってください！
+				$.support.cors = true;
+				$.mobile.allowCrossDomainPages = true;
+			});
+
+			$(document).ready(function() {
+
+				// loading開始
+				$('#loading').css('display', 'block');
+				$('#content').css('display', 'none');
+				$("#show_order_item").css("display", 'none');
+
+				document.addEventListener("deviceready", onDeviceReady, false);
+			});
+
+			function onDeviceReady() {
+				// 通信確認
+				if (check_network() == 'none'){
+					var show_orders = getLocalStorage("show_orders");
+					if(show_orders == null || show_orders == ''){
+						window.location.href = 'netError.html';
+					} else {
+						// とりあえず一覧表示だけする
+						setLocalStorage('show_order_flg', 'false');
+						onDeviceReady2();
+					}
+				} else {
+					// 通信出来る
+					onDeviceReady2();
+				}
+			}
+				
+			function onDeviceReady2(){
+
+				$.ajaxSetup({
+					timeout : 5000
+				});
+				
+				// メニューボタン設定 (fixedToolbarsの画面タップによる表示非表示を抑制）
+				$("[data-role=header]").fixedtoolbar({
+					tapToggle : false
+				});
+				$('#nav').css('display', 'block');
+				document.addEventListener("menubutton", function() {
+					if ($('#nav').is(':visible')) {
+						$('#nav').css('display', 'none');
+					} else {
+						$('#nav').css('display', 'block');
+					}
+				}, false);
+
+				// 設定ファイルの読み込み
+				readOrdering();
+			}
+
+			// 設定ファイルの読み込み
+			function readOrdering() {
+				getFile('ordering', getonOrderingOK, getonOrderingNG);
+				// 読み込み：失敗
+				function getonOrderingNG() {
+					window.location.href = "index.html";
+				}
+
+				// 読み込み：成功
+				function getonOrderingOK(json) {
+					// 表示ページの判定
+					var show_order_flg = getLocalStorage('show_order_flg');
+					if (show_order_flg == 'true') {
+						// 商品詳細値をセット
+						var paramsText = getLocalStorage('paramsData');
+						if (paramsText != null && paramsText != '' && paramsText != {}) {
+							var params = JSON.parse(paramsText);
+							// 購入商品表示
+							setData(params);
+						}
+					} else {
+						// 購入一覧表示
+						//商品詳細値を初期化
+						setLocalStorage('paramsData', '');
+						// 購入一覧データ取得
+						url = json.http + 'json/get_order_index.php';
+						hash = {
+							customer_id : json.customer_id,
+							customer_key : json.customer_key,
+							app_ver : json.app_ver,
+							app_code : json.app_code,
+							url : json.url,
+							http : json.http,
+							https : json.https
+						};
+
+						$.ajax({
+							type : "POST",
+							url : url,
+							data : hash,
+							success : function(data) {
+								// 更新日時の更新
+								var final_update = getDateTime(new Date() / 1000);
+								setLocalStorage('final_update', final_update);
+								// 注文情報表示
+								show_order_index(data);
+							},
+							error : function() {
+								// 通信エラー
+								console.log('showOrder:通信エラー');
+								// 過去の表示データを取得
+								var show_ordes = getLocalStorage('show_orders');
+								if (show_ordes != null && show_ordes != {} && show_ordes != '') {
+									var orders = JSON.parse(show_ordes);
+									// 注文情報表示: オフラインの救済処置
+									show_order_index(orders);
+								} else {
+									// 通信エラー表示
+									networkERR(settingCallBack, '通信エラー');
+								}
+							}
+						});
+						function settingCallBack() {
+							window.location.href = 'setting.html';
+							// エラーの場合、barcode画面からのバックボタンのリンクをsetting.htmlに変更
+							setLocalStorage('before', 'setting.html');
+						}
+					}
+				}
+
+			}
+
+			// 注文一覧表示
+			function show_order_index(orders) {
+				
+				// バックボタン設定
+				$("#backb").css("display", "none");
+				var before = getLocalStorage('before');
+				setLocalStorage('before', 'show_order.html');
+				// 商品情報の有無で戻るボタンを表示・非表示
+				var barcodeParams = getLocalStorage('barcodeParams');
+				// 戻るボタン非表示
+
+// EDIT 130207
+//				if ((barcodeParams == null || barcodeParams == "" || barcodeParams == {}) && before == 'barcode.html') {
+				var show_item_flg = getLocalStorage('show_item_flg');
+				if ((barcodeParams == null || barcodeParams == "" || barcodeParams == {}) || show_item_flg == 'false') {
+					$("#backb").css("display", "none");
+					document.addEventListener("backbutton", function() {
+						window.location.href = 'show_order.html';
+					}, false);
+				// 戻るボタン表示
+// EDIT 130207
+//				} else if (before == 'barcode.html') {
+				} else {
+					$("#backb").attr("href", "barcode.html");
+					$("#backbMoji").html("商品"); // 130207
+					$("#backb").css("display", "block");
+					document.addEventListener("backbutton", function() {
+						window.location.href = 'barcode.html';
+					}, false);
+/* DEL 130207
+				} else {
+					setLocalStorage('show_oreder_flg', 'false');
+					document.addEventListener("backbutton", function() {
+						window.location.href = 'show_order.html';
+					}, false);
+*/
+				}
+
+				console.log('購入一覧表示:show_order_index:');
+				// 購入一覧表示 false
+				setLocalStorage('show_order_flg', 'false');
+				// 購入商品index初期化
+				setLocalStorage('show_order_index', 'none');
+				// 購入一覧情報の保存
+				setLocalStorage("show_orders", JSON.stringify(orders));
+				// 購入商品一覧
+				var length = orders.length;
+				// 購入情報一覧表示情報の変数初期化
+				var order_indexs = '';
+				// 更新日時の取得
+				var update = '更新日時：<span>' + getLocalStorage('final_update') + '</span>';
+				$("#update_time").html(update);
+
+				if (length > 0) {
+					// 購入一覧表示開始
+					var order_id_taihi = '';
+					for (var i = 0; i < length; i++) {
+						// 購入情報の変数初期化
+						var order_index = '';
+						// 購入データログ出力
+						console.log('購入情報: ' + orders[i].order_id + JSON.stringify(orders[i]));
+						// 購入商品情報の代入
+						var order_id = orders[i].order_id;
+						var qr_id = orders[i].qr_id;
+						var item_version = orders[i].item_version;
+
+						// 注文状況の判定 130206 移動
+						var orderJyokyo = '';
+						if (orders[i].item_cancel_flg == 'disable' && (parseInt(new Date() / 1000) <= parseInt(orders[i].cancel_kanou_time))) {
+							orderJyokyo = '1';
+							// キャンセルしました
+						} else if (orders[i].item_cancel_flg == 'enable') {
+							orderJyokyo = '2';
+							// 注文確定
+						} else if (orders[i].order_sts == '配送準備中') {
+							orderJyokyo = '3';
+							// 発送済み
+						} else if (orders[i].order_sts == "配送済み") {
+							orderJyokyo = '4';
+						}
+
+						// 注文番号・注文時間
+						if (order_id != order_id_taihi) {
+							order_index += '<dt><span id="order_time" class="date">';
+							// 注文番号
+							if (orderJyokyo == '1') {
+								// キャンセル可能時間は注文番号は表示しない
+							} else if (orderJyokyo == '2') {
+								// キャンセル時も注文番号は表示しない。
+								if (orders[i].matome_count > 0) {
+									// ただし「まとめ注文で、１商品でも注文が確定」していれば、表示する
+									order_index += 'No.' + order_id + '　';
+								}
+							} else {
+								order_index += 'No.' + order_id + '　';
+							}
+							// 注文時間
+							order_index += getDateTime(orders[i].order_time) + '</span>注文</dt>';
+							order_id_taihi = order_id;
+						}
+						// 購入商品詳細表示へのリンク表示
+						order_index += '<dd><ul data-role="listview" class="listview"><li>';
+						order_index += '<a href="#" onClick="show_order_item(' + String(i) + ')">';
+
+						// キャンセル可能時間表示
+						if (orderJyokyo == '1') {
+							order_index += '<div class="order_cancel">';
+							//	order_index += '<span>' + getDateTime(parseInt(orders[i].order_time) + parseInt(orders[i].cancel_kanou_time)) + ' までキャンセル可能</span>';
+							order_index += '<span>' + getDateTime(parseInt(orders[i].cancel_kanou_time)) + ' までキャンセル可能</span>';
+							order_index += '</div>';
+							// キャンセルしました
+						} else if (orderJyokyo == '2') {
+							order_index += '<div class="order_defined">';
+							order_index += 'キャンセルしました <span>' + getDateTime(parseInt(orders[i].item_cancel_time)) + '</span>';
+							order_index += '</div>';
+							// 注文確定
+						} else if (orderJyokyo == '3') {
+							order_index += '<div class="shipment_notification">';
+							order_index += '配送準備中 <span>' + getDateTime(orders[i].order_update_time) + '</span>';
+							order_index += '</div>';
+							// 発送済み
+						} else if (orderJyokyo == '4') {
+							order_index += '<div class="shipment_notification">';
+							order_index += '商品配送済 <span>' + getDateTime(orders[i].order_update_time) + '</span>';
+							order_index += '</div>';
+						}
+
+						// 商品写真
+						order_index += '<div class="box2"><div class="box2_01 item_img"><div class="inner">';
+						order_index += '<img src="' + orders[i].item_image + '" width="60" height="60" />';
+
+						// 商品名
+						order_index += '</div></div><div class="box2_02 item_name">';
+						order_index += '<h1 class="name">' + orders[i].item_name + '</h1>';
+						order_index += '<div class="delivery"><span class="icon">お届け先</span><span>' + orders[i].recipient_subject + '</span></div>';
+						order_index += '<div class="total_price"><span class="icon">購入金額</span><span>' + setPrice(orders[i].total_price) + '</span>';
+						order_index += '<span class="icon">数量</span><span>' + orders[i].item_quantity + '</span></div>';
+						order_index += '</div></div>';
+
+						// 販売者からのお知らせ
+						if (orders[i].message_shop && orders[i].message_shop != '') {
+							//	order_index += '<div class="message_shop"><div class="tl">販売者からのお知らせ</div><div class="txt">';
+							order_index += '<div class="message_shop"><div class="txt">';
+							order_index += orders[i].message_shop;
+							order_index += '</div></div> ';
+						}
+						order_index += '</a></li></ul></dd>';
+
+						// 注文情報を結合
+						order_indexs += order_index;
+					}
+				} else {
+					// 購入履歴なし
+					order_indexs = '只今、ご購入履歴はありません。';
+				}
+				// loading停止
+				$("#show_order_item").css("display", 'none');
+				$('#loading').css('display', 'none');
+				$('#content').css('display', 'block');
+
+				// 注文情報の表示
+				$("#order_indexs").html(order_indexs);
+				// INS 130207 リフレッシュ
+				$('.listview').listview();
+			}
+
+			// 注文詳細表示
+			function show_order_item(index) {
+				// 通信確認
+				if (check_network() == 'none'){
+					var title = '通信できません';
+					var message = '操作するための情報の取得に失敗しました。しばらくしてから再度操作を行ってください。';
+					navigator.notification.alert(message, showOrderItemAlert, title, 'OK');
+					function showOrderItemAlert() {
+					}
+				} else {
+					// 注文詳細表示
+					show_order_item2(index);
+				}
+			}
+			
+			function show_order_item2(index){
+				// 購入商品表示 true
+				setLocalStorage('show_order_flg', 'true');
+				// 購入商品Index保存
+				setLocalStorage('show_order_index', String(index));
+
+				// loading開始
+				$('#loading').css('display', 'block');
+				$('#content').css('display', 'none');
+				$("#show_order_item").css("display", 'none');
+
+				// 購入詳細情報の取得用データ
+				index = parseInt(index);
+				var orders = JSON.parse(getLocalStorage('show_orders'));
+				// 注文商品情報の保存
+				setLocalStorage("order", JSON.stringify(orders[index]));
+				var hash = {
+					order_id : orders[index].order_id,
+					item_version : orders[index].item_version,
+					qr_id : orders[index].qr_id,
+				};
+
+				// 利用者情報の取得
+				getFile('ordering', getonOrderingOK, getonOrderingNG);
+				// 読み込み：失敗
+				function getonOrderingNG() {
+					window.location.href = "index.html";
+				}
+
+				// 読み込み：成功
+				function getonOrderingOK(ordering) {
+					// 購入詳細情報の取得
+					var url = ordering.http + 'json/get_order_item.php';
+					hash['app_ver'] = ordering.app_ver, hash['app_code'] = ordering.app_code, hash['url'] = ordering.url, hash['http'] = ordering.http, hash['https'] = ordering.https
+					console.log('show_order_item:hash: ' + JSON.stringify(hash));
+
+					// 再購入用 商品データ格納
+					var barcodeParams2 = {
+						qr_id : hash.qr_id,
+						order_latitude : 0,
+						order_longitude : 0
+					};
+					// 商品情報へ
+					setLocalStorage('barcodeParams2', JSON.stringify(barcodeParams2));
+
+					$.ajax({
+						type : "POST",
+						url : url,
+						data : hash,
+						success : function(data) {
+							// 商品詳細
+							if (data && data != null && data != {}) {
+								// 商品詳細データセット
+								setData(data);
+							} else {
+								var message = 'ご購入商品の情報取得ができませんでした';
+								var title = '該当データがありませんでした';
+								var button = 'OK';
+								navigator.notification.alert(message, settingCallBack, title, button);
+							}
+						},
+						error : function() {
+							networdERR(settingCallBack, '通信エラー');
+						}
+					});
+					function settingCallBack() {
+						window.location.href = 'setting.html';
+					}
+
+				}
+
+			}
+
+			// 商品詳細データセット
+			function setData(params) {
+				// 商品詳細値をセット
+				setLocalStorage('paramsData', JSON.stringify(params));
+				// バックボタン設定
+				$("#backbMoji").html("戻る"); // 130207
+				$("#backb").attr("href", "show_order.html").css("display", "none");
+				setLocalStorage('show_oreder_flg', 'false');
+				document.addEventListener("backbutton", function() {
+					window.location.href = 'show_order.html';
+				}, false);
+
+				// キャンセル状況
+				var cancel_sts = '';
+				var now = parseInt(new Date() / 1000);
+				if (params['item_cancel_flg'] == 'disable' && now <= (parseInt(params.cancel_kanou_time))) {
+					cancel_sts = '<div class="order_cancel">キャンセル <span>';
+					cancel_sts += (getDateTime(parseInt(parseInt(params.cancel_kanou_time)))) + ' まで受付</span></div>';
+				} else if (params['item_cancel_flg'] == 'enable') {
+					cancel_sts += '<div class="order_defined">キャンセルしました <span>';
+					cancel_sts += getDateTime(params['item_cancel_time']) + '</span></div>';
+				} else {
+					cancel_sts += '<div class="order_defined">ご注文が確定しました <span>';
+					cancel_sts += getDateTime(parseInt(parseInt(params.cancel_kanou_time))) + '</span></div>';
+					$('#order_item_report').css("display", "block");
+				}
+				document.getElementById("order_cancel_sts").innerHTML = cancel_sts;
+
+				// 削除メニュー
+				var del_order = '';
+				if (params['item_cancel_flg'] == 'enable' || now > (parseInt(params.cancel_kanou_time))) {
+					del_order = '<a href="#" class="ui-btn-right" data-icon="delete" data-direction="reverse">削除</a>';
+				}
+
+				// 商品名
+				document.getElementById("order_item_name").innerText = params['item_name'];
+
+				// 商品画像
+				var item_image = '<img src="' + params['item_image'] + '" width="150" height="150" alt="商品画像" />';
+				document.getElementById("order_item_image").innerHTML = item_image;
+
+				// 商品価格
+				var item_price = '無料';
+				if (parseInt(params['item_price']) > 0) {
+					item_price = currency(String(params['item_price'])) + '円';
+				}
+				document.getElementById("order_item_price").innerText = item_price;
+
+				// 送料
+				var shippingCost = '<dl class="shippingCost"><dt>送料</dt><dd id="order_carriage"><span id="carriage">';
+				if (parseInt(params['order_carriage']) > 0) {
+					shippingCost += currency(params['order_carriage']) + '円</span></dd></dl>';
+				} else {
+					shippingCost += '無料</span></dd></dl>';
+				}
+				document.getElementById("order_shippingCost").innerHTML = shippingCost
+
+				// 支払いステータス
+				//	if(){
+				var item_pay_sts = '';
+				//	params.pay_cod = 1; // test
+				//	params.ordercommission = 315; // test
+				if (params['pay_card'] == 1) {
+					// カード払い
+					item_pay_sts = '<p class="ico ico_onlyRemaining">カード払い</p>';
+				} else if (params['pay_cod'] == 1) {
+					// 代引き
+					item_pay_sts = '<p class="ico ico_onlyRemaining">代金引換</p>';
+				}
+				if (item_pay_sts != '') {
+					$("#item_pay_sts").html(item_pay_sts);
+					// 代引き手数料
+					if (params['ordercommission'] && parseInt(params['ordercommission']) > 0) {
+						var pay_codCost = '<span>手数料 ';
+						pay_codCost += currency(params['ordercommission']) + '円</span>';
+						$("#pay_cod_cost").html(pay_codCost);
+					} else {
+						params['ordercommission'] = 0;
+					}
+				}
+				//	}
+
+				// 合計金額
+				var total_price = '<div class="item_buy_price"><span>ご請求額：</span><span id="total">';
+				total_price += currency(String(parseInt(params.item_price) * parseInt(params.item_quantity) + parseInt(params.order_carriage))) + '円(税込)';
+				total_price += '</span></div>';
+				document.getElementById("order_total_price").innerHTML = total_price;
+
+				// 数量
+				$('#order_item_quantity_buy').html('<span>' + String(params.item_quantity) + '個</span>');
+
+				// お届け先
+				var recipient = '<dt>お届け先</dt>';
+				recipient += '<dd>' + '〒' + params['recipient_zipcode'].substr(0, 3) + '-' + params['recipient_zipcode'].substr(3, 4) + '<br />';
+				recipient += params['recipient_pref'] + params['recipient_address1'] + '<br />';
+				recipient += params['recipient_address2'] + '<br />';
+				recipient += '</dd><dt>お受取人</dt><dd>' + params['recipient_name'] + ' 様</dd>';
+				recipient += '<dt>電話番号</dt><dd>';
+				recipient += params['recipient_phone'] + '</dd>';
+				document.getElementById("order_recipient").innerHTML = recipient;
+
+				// 商品説明
+				var shop_contact = '<div class="txt" style="font-weight:bold;">' + params.item_name + '</div><div class="txt">';
+				shop_contact = shop_contact + params.item_long_desc + '</div>';
+				document.getElementById("order_shop_contact").innerHTML = shop_contact;
+
+				// 販売社名
+				document.getElementById("company_name").innerText = String(params['company_name']);
+
+				// 特商　別ページ対応　130201 INS
+				$("#company_phone_go").attr("href", "tel:" + params['company_phone']);
+
+				// 紹介用QRコード
+				var show_qr = 'show_qrcode.html';
+				$("#qr_view").attr("href", show_qr);
+
+				// キャンセル・再購入
+				var buttons = '';
+				$("#buy_button").css("display", "none");
+				$("#cancel_button").css("display", "none");
+				// キャンセル可能時間内か判定
+				if (params['item_cancel_flg'] == 'disable' && now <= (parseInt(params.cancel_kanou_time))) {
+					// キャンセルボタン表示
+					$("#buy_button").removeClass();
+					$("#cancel_button").removeClass();
+					$("#buy_button").css("display", "none");
+					$("#cancel_button").css("display", "block");
+				} else if (params['item_repeat_flg'] == 'enable' && params.rep_flg == 0) {
+					// 再購入ボタン表示
+					// サンプルの場合
+					if (params.samp_flg && params.samp_flg == 1) {
+						var btn_repeat = 'この商品を購入する';
+						$("#btn_repeat").html(btn_repeat);
+					}
+					$("#cancel_button").removeClass();
+					$("#buy_button").removeClass();
+					$("#cancel_button").css("display", "none");
+					$("#buy_button").css("display", "block");
+					// 再購入用お届け先の保存
+					var params = JSON.parse(getLocalStorage('paramsData'));
+					params.area_name = params['recipient_pref'];
+					setLocalStorage('paramsData', JSON.stringify(params));
+				} else if (params['item_repeat_flg'] != 'enable' && params.samp_flg != 1) {
+					// サンプルでない場合
+					// 再購入状況を判定
+					if (params.rep_flg == 1) {
+						$("#notRepeatMsg").css("display", "block");
+					} else if (params.rep_flg == 2) {
+						$("#notRepeatMsg").text("この商品は現在ご購入いただけません");
+					}
+				}
+
+				// お問い合わせフォーム用のデータセット
+				var contactParams = {
+					order_id : params.order_id,
+					qr_id : params.qr_id,
+					item_version : params.item_version,
+					customer_id : params.customer_id
+				}
+				setLocalStorage("contactParams", JSON.stringify(contactParams));
+				$("#contact").attr("href", 'contact.html');
+				var contact = 'contact_order.html';
+				$("#contact").attr("href", contact);
+				var report = 'report.html';
+				$("#report").attr("href", report);
+
+				// loading停止
+				$('#loading').css('display', 'none');
+				$('#content').css('display', 'none');
+				$("#show_order_item").css("display", 'block');
+
+				// 表示後の処理
+
+				// currentを外す
+				$("#tab03").removeClass("current");
+
+				// 紹介用QR_ID生成・保存
+				var qr_id = String(JSON.parse(getLocalStorage('barcodeParams2')).qr_id);
+				new_qr_id = qr_id.substr(0, 18) + '00' + qr_id.substr(20, 2);
+				setLocalStorage("item_name", params.item_name);
+				setLocalStorage("qr_id", new_qr_id);
+
+				// 表示フラグ 購入一覧表示: false
+				setLocalStorage('show_order_flg', 'false');
+				// バックボタン設定
+				document.addEventListener("backbutton", function() {
+					window.location.href = 'show_order.html';
+				}, false);
+				$("#backbMoji").html("戻る"); // 130207
+				$("#backb").css("display", "block");
+			}
+/* 130207 DEL
+			// 特商ページ 130201 INS
+			function getProfile() {
+				// 購入詳細表示:true
+				setLocalStorage('show_order_flg', 'true');
+				// バックボタン設定
+				document.addEventListener("backbutton", function() {
+					window.location.href = 'show_order.html';
+				}, false);
+				// 特商情報取得
+				var get = JSON.parse(getLocalStorage('barcodeParams2'));
+				var filename = "http://exorder.jp/products/?page=profile&qr_id=" + String(get.qr_id);
+				// html取得
+				getIndex(filename);
+				function getIndex(filename) {
+					xmlhttp = new XMLHttpRequest();
+					if (xmlhttp) {
+						xmlhttp.onreadystatechange = check;
+						xmlhttp.open("GET", filename);
+						xmlhttp.send(null);
+					}
+				}
+				function check() {
+					if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+						document.getElementById("htmlProfile").innerHTML = xmlhttp.responseText;
+						$('#loading').css('display', 'none');
+						$('#content').css('display', 'none');
+						$("#show_order_item").css("display", 'none');
+						$("#page_shopProfile").css("display", "block");
+					}
+				}
+			}
+*/
+			// 特商ページ 130207 INS Start
+			function getProfile() {
+				var chNetwork = check_network();
+				if (chNetwork != "none") {
+					// 特商情報取得
+					var get = JSON.parse(getLocalStorage('barcodeParams2'));
+					var filename = "http://exorder.jp/products/?page=profile&qr_id=" + String(get.qr_id);
+					// html取得
+					getIndex(filename);
+					function getIndex(filename) {
+						xmlhttp = new XMLHttpRequest();
+						if (xmlhttp) {
+							xmlhttp.onreadystatechange = check;
+							xmlhttp.open("GET", filename);
+							xmlhttp.send(null);
+						}
+					}
+
+					function check() {
+						if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+							document.getElementById("htmlProfile").innerHTML = xmlhttp.responseText;
+						}
+					}
+
+				} else {
+					var title = '現在表示できません'
+					var message = '通信環境が良くないため販売店情報を表示できませんでした';
+					navigator.notification.alert(message, errorAlert(), title, 'OK');
+					function errorAlert() {
+						console.log('chNetwork: ' + chNetwork);
+					}
+
+				}
+			}
+			// 特商ページ 130207 INS End
+
+			// キャンセル・再購入
+			function cancel_buy(operation) {
+				console.log('operation: ' + operation);
+				var paramsText = getLocalStorage('paramsData');
+				console.log('cancel_buy:paramsText: ' + paramsText);
+				setLocalStorage('params', paramsText);
+				// キャンセル処理
+				if (operation == 'cancel') {
+					window.location.href = 'cancel.html';
+					//window.location.href = 'cancel.html?params=' + paramsText;
+					// 再購入処理
+				} else if (operation == 'repeat') {
+					// 商品表示 true
+					setLocalStorage('show_item_flg', 'true');
+					// 保存した数量の初期化フラグ true:初期化
+					setLocalStorage('initBackAmount', 'true');
+					// サーバからの商品情報の保存ハッシュ初期化
+					setLocalStorage('show_item_params', '');
+					// 購入商品表示 true
+					setLocalStorage('show_order_flg', 'true');
+					// リダイレクト
+					window.location.href = 'barcode.html';
+				}
+			}
+
+			// navバーのbarcode選択でbarcode画面表示にフラグを切り替え
+			function chShowItemFlg() {
+				setLocalStorage('show_item_flg', 'false');
+				window.location.href = 'barcode.html';
+			}
+
+			// navバーの購入履歴選択で画面表示フラグを切り替え
+			function chShowOrderFlg() {
+				setLocalStorage('show_order_flg', 'false');
+				window.location.href = 'show_order.html';
+			}
+			
+			// 特商から購入商品へ戻る
+			function pageItem(){
+				alert('backb');
+				setLocalStorage('show_order_flg', 'true');
+				window.location.href = 'show_order.html';
+			}
+
+		</script>
+
+	</head>
+
+	<body>
+
+		<div id="page_itemDetail" data-role="page" data-add-back-btn="false" data-theme="z">
+
+			<div data-role="header" id="header" data-position="fixed">
+				<h1 id='pageTitle'>購入履歴</h1>
+				<a id="backb" href="#" class="ui-btn-left" data-icon="arrow-l" data-direction="reverse" data-ajax="false" style="display: none;"><span id="backbMoji">戻る</span></a>
+				<a href="website.html" class="ui-btn-right" data-icon="info" data-direction="reverse" data-ajax="false"> 使い方</a>
+			</div>
+			<!-- loading -->
+			<div class="loading" data-role="content" id="loading" style="display:none;">
+				<div class="loading_box">
+					<p>
+						しばらくおまちください
+					</p>
+					<div id="loadingImg" class="square"></div>
+					<script>
+						// spin setting
+						var opts = {
+							ines : 11, // The number of lines to draw
+							length : 6, // The length of each line
+							width : 3, // The line thickness
+							radius : 8, // The radius of the inner circle
+							corners : 0.9, // Corner roundness (0..1)
+							rotate : 0, // The rotation offset
+							color : '#666', // #rgb or #rrggbb
+							speed : 0.7, // Rounds per second
+							trail : 33, // Afterglow percentage
+							shadow : false, // Whether to render a shadow
+							hwaccel : true, // Whether to use hardware acceleration
+							className : 'spinner', // The CSS class to assign to the spinner
+							zIndex : 2e9, // The z-index (defaults to 2000000000)
+							top : 'auto', // Top position relative to parent in px
+							left : 'auto' // Left position relative to parent in px
+						};
+						var target = document.getElementById('loadingImg');
+						var spinner = new Spinner(opts).spin(target);
+					</script>
+				</div>
+			</div>
+			<!-- content: show_order -->
+			<div class="cont_orderInfoApp_index" data-role="content" id="content" style="display:none;">
+				<!-- 更新日時 -->
+				<div id="update_time" class="update_time"></div>
+				<!-- 注文一覧 -->
+				<dl id="order_indexs" class="orderInfoApp_list"></dl>
+			</div>
+
+			<!-- content: show_order_item -->
+			<div class="cont_itemDetail" data-role="content" id="show_order_item" style="display:none;">
+
+				<!-- 商品情報変更 -->
+				<div id="data_change"></div>
+				<ul class="item_summary" data-role="listview">
+					<!-- 商品名 -->
+					<li class="item_name">
+						<h1 class="name" id="order_item_name"></h1>
+					</li>
+					<!-- キャンセル表示 -->
+					<li id="order_cancel_sts"></li>
+					<li class="item_img_price">
+						<div class="box2">
+							<!-- 商品画像 -->
+							<div class="box2_01 item_img">
+								<div class="inner" id="order_item_image"></div>
+							</div>
+							<div class="box2_02 item_price">
+								<!-- 価格 -->
+								<dl class="price">
+									<dt>
+										価格
+									</dt>
+									<dd id="order_item_price"></dd>
+								</dl>
+								<dl class="shippingCost">
+									<dt>
+										購入数量
+									</dt>
+									<dd id="order_item_quantity_buy"></dd>
+								</dl>
+								<!-- 送料 -->
+								<div id="order_shippingCost"></div>
+								<!-- 支払い方法 -->
+								<div id="item_pay_sts"></div>
+							</div>
+						</div>
+					</li>
+					<!-- 合計金額 -->
+					<li id="order_total_price" class="item_quantity_buy"></li>
+					<!-- お届け先 -->
+					<li class="item_shippingAddress">
+						<dl id="order_recipient"></dl>
+					</li>
+					<!-- 商品説明 -->
+					<li class="shop_contact" id="order_shop_contact" ></li>
+
+					<li class="shop_neme">
+						<a href="#page_shopProfile" deta-transition="slidefade" onclick="javascript:getProfile();"> 販売者：<span id="company_name"></span>
+						<p class="txt">
+							販売者・特定商取引の詳細はこちら
+						</p> </a>
+					</li>
+					<li class="shop_contact">
+						<div class="txt">
+							販売者へのお問い合わせはこちらから
+						</div>
+						<div class="box2">
+							<div class="box2_01 contact_link">
+								<a class="btn_prev form_link" href="#" data-role="button" id="contact" data-ajax="false">フォームから</a>
+							</div>
+							<div class="box2_02 tel_link" id="company_phone" >
+								<a class="btn_prev tel_link" href="#" data-role="button" id="company_phone_go">電話から</a>
+							</div>
+						</div>
+					</li>
+
+					<li class="report">
+						<div class="txt">
+							ご家族やご友人のスマートフォンのExOrderから同じ商品を購入していただくことができます。
+						</div>
+						<div class="report_btn" id="show_qr">
+							<a id="qr_view" class="btn_prev" href="#" data-role="button" target="_blank">QRコードでこの商品を紹介する</a>
+						</div>
+					</li>
+					<li class="item_buy_1btn">
+						<div class="item_buy btn_txt_ow" id="cancel_button">
+							<a class="btn_next" type="button" href="#" onclick="cancel_buy('cancel');">ご購入をキャンセルする</a>
+						</div>
+						<div class="item_buy btn_txt_ow" id="buy_button">
+							<a id="btn_repeat" class="btn_next" type="button" href="#" onclick="cancel_buy('repeat');" >この商品を再購入する</a>
+						</div>
+						<div class="txt" id="notRepeatMsg" style="display:none;">
+							この商品は再購入できない商品になります。
+						</div>
+					</li>
+
+					<li id="order_item_report" class="report">
+						<div class="txt">
+							トラブルがありましたら、お手数ですが以下のボタンよりExOrderサービス管理会社までご連絡ください。
+						</div>
+						<div class="report_btn">
+							<a class="btn_prev" href="#" data-role="button" id="report"  data-ajax="false"> 違反報告する </a>
+						</div>
+					</li>
+				</ul>
+			</div>
+
+			<div id="nav" class="footer" data-role="footer" data-position="fixed" data-id="tabber">
+				<ul>
+					<li class="tab01 current">
+						<a href="#" data-ajax="false"  onclick="chShowOrderFlg();"> <span>購入履歴</span> </a>
+					</li>
+					<li class="tab02">
+						<a href="#" data-ajax="false" onclick="chShowItemFlg();"> <span>読み取り</span> </a>
+					</li>
+					<li id="tab03" class="tab03">
+						<a href="setting.html" data-ajax="false"> <span>設定</span> </a>
+					</li>
+				</ul>
+			</div><!-- /dr-footer -->
+		</div>
+
+		<!-- 販売者・特定商取引 130201 UPD -->
+		<div id="page_shopProfile" data-role="page" data-add-back-btn="false" data-theme="z">
+			<div data-role="header" id="header" data-position="fixed">
+				<h1>特定商取引情報</h1>
+				<a href="#page_itemDetail" class="ui-btn-left" data-icon="arrow-l" data-direction="reverse" data-rel="back"> 戻る </a>
+			</div>
+			<!-- コンテンツここから-->
+			<div id="htmlProfile"></div>
+		</div>
+
+	</body>
+</html>
+
