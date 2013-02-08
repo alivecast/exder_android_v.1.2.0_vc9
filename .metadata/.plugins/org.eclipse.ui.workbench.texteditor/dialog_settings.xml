@@ -2,19 +2,19 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="true" key="wrap"/>
-		<item value="false" key="isRegEx"/>
 		<item value="false" key="casesensitive"/>
+		<item value="false" key="isRegEx"/>
 		<item value="false" key="wholeword"/>
-		<item value="setLocalStorage(" key="selection"/>
+		<item value="item_pay_sts" key="selection"/>
 		<list key="findhistory">
+			<item value="item_pay_sts"/>
+			<item value="show_order_"/>
+			<item value="show_item"/>
+			<item value="contactParams"/>
+			<item value="contact"/>
 			<item value="setLocalStorage("/>
 			<item value="alert"/>
 			<item value="purchased_item_flg"/>
-			<item value="index.html"/>
-			<item value="130206"/>
-			<item value="o "/>
-			<item value=" o"/>
-			<item value="o"/>
 		</list>
 	</section>
 </section>

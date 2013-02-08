@@ -52,17 +52,11 @@
 				console.log('show_item_flg: ' + show_item_flg);
 				// 表示画面の判定
 				if (show_item_flg == 'false') {
-
 					// barcode画面の表示
 					startBarcode();
-
 				} else {
-					// INT 130208
-					// 読み取りフラグ:購入時の住所入力などで、途中でやめ、商品に戻ってきた場合、読み取り後に変えてあげる。
-					setLocalStorage('purchased_item_flg', 'get');
 					// 商品情報の表示
 					showItem();
-
 				}
 
 				// barcode画面
@@ -450,9 +444,7 @@
 							} else {
 								// 送料０円の場合
 								// 利用者情報の有無を判定
-// EDIT 130208 判定をお届け先でする
-//								if (params['customer_id'] && params['customer_id'] > 0) {
-								if (addressee != null && addressee != '' && params.adr_flg == 1) {
+								if (params['customer_id'] && params['customer_id'] > 0) {
 									// 利用者情報がある:enable
 									setLocalStorage('shippingCost', 'enable');
 									shippingCost += '<em style="font-size:15px;">送料無料</em></span></dd></dl>';
@@ -1244,9 +1236,7 @@
 			// 商品データ削除
 			function deleteParams() {
 				delFile('barcodeParams');
-				// 130208 INS
-				setLocalStorage('purchased_item_flg', '');
-				setLocalStorage('kbn', '');
+				// 130207 INS
 				setLocalStorage('show_item_flg', 'false');
 				setLocalStorage('before', 'setting.html');
 				window.location.href = 'setting.html';

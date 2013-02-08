@@ -48,7 +48,6 @@
 				document.addEventListener("backbutton", function() {
 					window.location.href = before;
 				}, false);
-
 				// 商品情報の有無で戻るボタンを表示・非表示
 				var barcodeParams = getLocalStorage('barcodeParams');
 				// 戻るボタン非表示
@@ -249,10 +248,6 @@
 						});
 					}
 				}
-
-//  130208 INS Start
-				$("#header").css("display", "block");
-
 			}
 
 			// 設定画面表示
@@ -631,7 +626,7 @@
 
 		<div data-role="page" data-add-back-btn="false" data-theme="z">
 
-			<div data-role="header" id="header" data-position="fixed" style="display:none;">
+			<div data-role="header" id="header" data-position="fixed">
 				<h1>設定</h1>
 				<a id="backb" href="#" class="ui-btn-left" data-icon="arrow-l" data-direction="reverse" data-ajax="false" style="display: none;">商品</a>
 				<a href="website.html" class="ui-btn-right" data-icon="info" data-ajax="false">使い方</a>

@@ -450,9 +450,7 @@
 							} else {
 								// 送料０円の場合
 								// 利用者情報の有無を判定
-// EDIT 130208 判定をお届け先でする
-//								if (params['customer_id'] && params['customer_id'] > 0) {
-								if (addressee != null && addressee != '' && params.adr_flg == 1) {
+								if (params['customer_id'] && params['customer_id'] > 0) {
 									// 利用者情報がある:enable
 									setLocalStorage('shippingCost', 'enable');
 									shippingCost += '<em style="font-size:15px;">送料無料</em></span></dd></dl>';

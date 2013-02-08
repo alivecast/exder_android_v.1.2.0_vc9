@@ -370,13 +370,13 @@
 					console.log('show_order_item:hash: ' + JSON.stringify(hash));
 
 					// 再購入用 商品データ格納
-					var barcodeParams2 = {
+					var barcodeParams = {
 						qr_id : hash.qr_id,
 						order_latitude : 0,
 						order_longitude : 0
 					};
 					// 商品情報へ
-					setLocalStorage('barcodeParams2', JSON.stringify(barcodeParams2));
+					setLocalStorage('barcodeParams', JSON.stringify(barcodeParams));
 
 					$.ajax({
 						type : "POST",
@@ -583,7 +583,7 @@
 				$("#tab03").removeClass("current");
 
 				// 紹介用QR_ID生成・保存
-				var qr_id = String(JSON.parse(getLocalStorage('barcodeParams2')).qr_id);
+				var qr_id = String(JSON.parse(getLocalStorage('barcodeParams')).qr_id);
 				new_qr_id = qr_id.substr(0, 18) + '00' + qr_id.substr(20, 2);
 				setLocalStorage("item_name", params.item_name);
 				setLocalStorage("qr_id", new_qr_id);
@@ -607,7 +607,7 @@
 					window.location.href = 'show_order.html';
 				}, false);
 				// 特商情報取得
-				var get = JSON.parse(getLocalStorage('barcodeParams2'));
+				var get = JSON.parse(getLocalStorage('barcodeParams'));
 				var filename = "http://exorder.jp/products/?page=profile&qr_id=" + String(get.qr_id);
 				// html取得
 				getIndex(filename);
@@ -635,7 +635,7 @@
 				var chNetwork = check_network();
 				if (chNetwork != "none") {
 					// 特商情報取得
-					var get = JSON.parse(getLocalStorage('barcodeParams2'));
+					var get = JSON.parse(getLocalStorage('barcodeParams'));
 					var filename = "http://exorder.jp/products/?page=profile&qr_id=" + String(get.qr_id);
 					// html取得
 					getIndex(filename);

@@ -48,7 +48,6 @@
 				document.addEventListener("backbutton", function() {
 					window.location.href = before;
 				}, false);
-
 				// 商品情報の有無で戻るボタンを表示・非表示
 				var barcodeParams = getLocalStorage('barcodeParams');
 				// 戻るボタン非表示
@@ -56,8 +55,6 @@
 //				if ((barcodeParams == null || barcodeParams == "" || barcodeParams == {}) && before == 'barcode.html') {
 				var show_item_flg = getLocalStorage('show_item_flg');
 				if ((barcodeParams == null || barcodeParams == "" || barcodeParams == {}) || show_item_flg == 'false') {
-					// 商品ない場合は、購入フラグも削除 130208 INS
-					setLocalStorage('purchased_item_flg', '');
 					$("#backb").css("display", "none");
 					document.addEventListener("backbutton", function() {
 						window.location.href = 'setting.html';
@@ -249,10 +246,6 @@
 						});
 					}
 				}
-
-//  130208 INS Start
-				$("#header").css("display", "block");
-
 			}
 
 			// 設定画面表示
@@ -587,7 +580,7 @@
 						// 暗証番号入力する
 						// 飛び先設定
 						setLocalStorage('settingHref', 'ordering_new.html');
-						$("#btnOrderMoji").text('ＯＫ');
+						$("#btnOrder").text('ＯＫ');
 						$("#popupForm").trigger('click');
 					}else{
 						window.location.href = 'ordering_new.html';
@@ -613,7 +606,7 @@
 						// 暗証番号入力する
 						// 飛び先設定
 						setLocalStorage('settingHref', 'addressee_index.html');
-						$("#btnOrderMoji").text('ＯＫ');
+						$("#btnOrder").text('ＯＫ');
 						$("#popupForm").trigger('click');
 					}else{
 						window.location.href = 'addressee_index.html';
@@ -631,7 +624,7 @@
 
 		<div data-role="page" data-add-back-btn="false" data-theme="z">
 
-			<div data-role="header" id="header" data-position="fixed" style="display:none;">
+			<div data-role="header" id="header" data-position="fixed">
 				<h1>設定</h1>
 				<a id="backb" href="#" class="ui-btn-left" data-icon="arrow-l" data-direction="reverse" data-ajax="false" style="display: none;">商品</a>
 				<a href="website.html" class="ui-btn-right" data-icon="info" data-ajax="false">使い方</a>
@@ -739,9 +732,11 @@
 									<input type="password" autocomplete="off" id="customer_pass" name="customer_pass" value="" maxlength=16 placeholder="数字4～16桁" />
 
 									<div data-role="content" data-theme="a" class="ui-corner-bottom ui-content" style="margin-top: 10px;">
-										<a href="#" data-role="button" data-inline="true" data-transition="flow" data-theme="b" id="btnOrder" class="btn_next" onclick="eqPass();"><span id="btnOrder">購入する</span></a>
+										<a href="#" data-role="button" data-inline="true" data-transition="flow" data-theme="b" id="btnOrder" class="btn_next" onclick="eqPass();">購入する</a>
+<!-- 130208 DEL
 										<a href="#" data-role="button" data-inline="true" data-rel="back" data-theme="c" id="popupClose">閉じる</a>
-
+ 130218 INS -->
+										<a href="#" data-ajax="false" data-role="button" data-inline="true" data-theme="c" id="popupClose">閉じる</a>
 									</div>
 
 									<div class="txt" style="margin-top: 40px;">
