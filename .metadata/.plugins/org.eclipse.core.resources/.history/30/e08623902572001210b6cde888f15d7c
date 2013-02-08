@@ -348,7 +348,7 @@
 				// 判定
 				if (inputPasscode == 'true') {
 					// 暗証番号入力する
-					if (nowTime - passTime > overTime && json.customer_id != 0) {
+					if (nowTime - passTime > overTime) {
 						// 前回操作から時間が経過 + 暗証番号入力していない
 						// 暗証番号入力する
 

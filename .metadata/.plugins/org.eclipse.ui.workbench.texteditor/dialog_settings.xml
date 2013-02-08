@@ -5,16 +5,16 @@
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="isRegEx"/>
 		<item value="false" key="wholeword"/>
-		<item value="item_pay_sts" key="selection"/>
+		<item value="popup" key="selection"/>
 		<list key="findhistory">
+			<item value="popup"/>
+			<item value="okOrder"/>
 			<item value="item_pay_sts"/>
 			<item value="show_order_"/>
 			<item value="show_item"/>
 			<item value="contactParams"/>
 			<item value="contact"/>
 			<item value="setLocalStorage("/>
-			<item value="alert"/>
-			<item value="purchased_item_flg"/>
 		</list>
 	</section>
 </section>
