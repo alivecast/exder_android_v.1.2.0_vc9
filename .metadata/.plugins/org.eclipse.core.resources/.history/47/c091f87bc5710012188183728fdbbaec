@@ -506,7 +506,6 @@
 							$("#customer_pass").val('');
 						}, title, button);
 						return false;
-
 						// 入力値が合っている
 					} else {
 						// passTime更新
@@ -518,16 +517,12 @@
 							order2();
 						} else {
 							// 飛び先の読出し 130207 INS
-							$('.ui-dialog').dialog('close');  // ダイアログを閉じる
-							window.location.href = 'addressee_index.html';
-
 							var settingHref = getLocalStorage('settingHref');
-							if( settingHref != Null && settingHref != '' && settingHref == 'addressee_index'){
-									window.location.href = 'addressee_index.html';
+							if( settingHref != Null && settingHref != '' ){
+								window.location.href = settingHref;
 							}else{
-									window.location.href = 'ordering_new.html';
+								window.location.href = 'setting.html';
 							}
-
 						}
 					}
 				}
@@ -591,8 +586,8 @@
 						// 前回操作から時間が経過 + 暗証番号入力していない
 						// 暗証番号入力する
 						// 飛び先設定
-						setLocalStorage('settingHref', 'ordering_new');
-						$("#btnOrderMoji").text('　ＯＫ　');
+						setLocalStorage('settingHref', 'ordering_new.html');
+						$("#btnOrderMoji").text('ＯＫ');
 						$("#popupForm").trigger('click');
 					}else{
 						window.location.href = 'ordering_new.html';
@@ -617,8 +612,8 @@
 						// 前回操作から時間が経過 + 暗証番号入力していない
 						// 暗証番号入力する
 						// 飛び先設定
-						setLocalStorage('settingHref', 'addressee_index');
-						$("#btnOrderMoji").text('　ＯＫ　');
+						setLocalStorage('settingHref', 'addressee_index.html');
+						$("#btnOrderMoji").text('ＯＫ');
 						$("#popupForm").trigger('click');
 					}else{
 						window.location.href = 'addressee_index.html';
@@ -729,10 +724,7 @@
 
 					<!-- 暗証番号入力 -->
 					<li style="display: none;">
-						<a id="popupForm" href="#popupLogin" data-rel="dialog" data-transition="pop">--</a>
-<!-- TEST
 						<a id="popupForm" href="#popupLogin" data-rel="popup" data-position-to="window" data-role="button" data-inline="true" data-transition="pop">a</a>
-
 						<div data-role="popup" data-overlay-theme="a" data-theme="a" id="popupLogin" class="ui-corner-all" style="max-width:480px;">
 							<div class="page_description">
 								<div class="txt">
@@ -743,22 +735,22 @@
 								<input type="hidden" id="customer_passT" name="customer_passT" value=""/>
 
 								<div data-role="fieldcontain" style="padding: 10px;">
-
 									<label for="customer_pass" class="fieldLabel">暗証番号<span class="form_note">(数字4～16桁)</span></label>
 									<input type="password" autocomplete="off" id="customer_pass" name="customer_pass" value="" maxlength=16 placeholder="数字4～16桁" />
+
 									<div data-role="content" data-theme="a" class="ui-corner-bottom ui-content" style="margin-top: 10px;">
-										<a href="#" data-role="button" data-inline="true" data-transition="flow" data-theme="b" id="btnOrder" class="btn_next" onclick="eqPass();"><span id="btnOrderMoji">購入する</span></a>
+										<a href="#" data-role="button" data-inline="true" data-transition="flow" data-theme="b" id="btnOrder" class="btn_next" onclick="eqPass();"><span id="btnOrder">購入する</span></a>
 										<a href="#" data-role="button" data-inline="true" data-rel="back" data-theme="c" id="popupClose">閉じる</a>
 
 									</div>
 
-									<div class="txt" style="margin-top: 30px;">
+									<div class="txt" style="margin-top: 40px;">
 										<a href="passcode_hint.html" data-ajax="false">暗証番号を忘れた方はコチラ</a>
 									</div>
+
 								</div>
 							</div>
 						</div>
--->
 					</li>
 
 				</ul>
@@ -779,17 +771,7 @@
 					</li>
 				</ul>
 			</div><!-- /dr-footer -->
-		</div>
 
-		<!-- 暗証番号 130208 TEST -->
-		<div id="popupLogin" data-role="page" data-theme="z" style="backbround-color:#ffffff;">
-			<!-- コンテンツここから-->
-			<div data-role="content">
-				<p>操作を続けるには、暗証番号を入力してください</p>
-				<input type="password" autocomplete="off" id="customer_pass" name="customer_pass" value="" maxlength=16 placeholder="暗証番号を入力" />
-				<a href="#" data-role="button" data-inline="true" data-transition="flow" data-theme="b" id="btnOrder" class="btn_next" onclick="eqPass();"><span id="btnOrderMoji">購入する</span></a>
-				<a href="#" data-role="button" data-inline="true" data-rel="back" data-theme="c" id="popupClose" onclick="javascript:setLocalStorage('purchased_item_flg', '');">閉じる</a>
-			</div>
 		</div>
 
 	</body>

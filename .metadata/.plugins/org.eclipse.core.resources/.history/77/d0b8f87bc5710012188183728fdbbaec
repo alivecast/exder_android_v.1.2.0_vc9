@@ -686,9 +686,6 @@
 					setLocalStorage('show_item_params', '');
 					// 購入商品表示 true
 					setLocalStorage('show_order_flg', 'true');
-					// 商品情報の引き渡し 130208
-					var barcodeParams = getLocalStorage('barcodeParams2');
-					setLocalStorage('barcodeParams', barcodeParams);
 					// リダイレクト
 					window.location.href = 'barcode.html';
 				}

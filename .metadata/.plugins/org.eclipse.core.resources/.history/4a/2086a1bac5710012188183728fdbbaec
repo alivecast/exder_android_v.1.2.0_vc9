@@ -788,7 +788,7 @@
 				<p>操作を続けるには、暗証番号を入力してください</p>
 				<input type="password" autocomplete="off" id="customer_pass" name="customer_pass" value="" maxlength=16 placeholder="暗証番号を入力" />
 				<a href="#" data-role="button" data-inline="true" data-transition="flow" data-theme="b" id="btnOrder" class="btn_next" onclick="eqPass();"><span id="btnOrderMoji">購入する</span></a>
-				<a href="#" data-role="button" data-inline="true" data-rel="back" data-theme="c" id="popupClose" onclick="javascript:setLocalStorage('purchased_item_flg', '');">閉じる</a>
+				<a href="#" data-role="button" data-inline="true" data-rel="back" data-theme="c" id="popupClose">閉じる</a>
 			</div>
 		</div>
 

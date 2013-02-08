@@ -1438,7 +1438,7 @@
 									<input type="password" autocomplete="off" id="customer_pass" name="customer_pass" value="" maxlength=16 placeholder="暗証番号を入力" />
 									<div data-role="content" data-theme="a" class="ui-corner-bottom ui-content" style="margin-top: 10px;">
 										<a href="#" data-role="button" data-inline="true" data-transition="flow" data-theme="b" id="btnOrder" class="btn_next" onclick="eqPass();">購入する</a>
-										<a href="#" data-role="button" data-inline="true" data-rel="back" data-theme="c" id="popupClose" onclick="javascript:setLocalStorage('purchased_item_flg', '');">閉じる</a>
+										<a href="#" data-role="button" data-inline="true" data-rel="back" data-theme="c" id="popupClose">閉じる</a>
 									</div>
 
 									<div class="txt" style="margin-top: 30px;">

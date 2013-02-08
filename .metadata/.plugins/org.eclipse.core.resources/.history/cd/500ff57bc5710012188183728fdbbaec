@@ -167,8 +167,6 @@
 
 			// 次回起動時以降
 			function updateOradering(json) {
-				// 130208
-				setLocalStorage('passTime', '0');
 				console.log("json : ordering");
 				// 設定ファイル上書き
 				var datalist = json;
