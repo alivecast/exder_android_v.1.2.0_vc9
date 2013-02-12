@@ -133,29 +133,27 @@
 					url : url,
 					data : params,
 					success : function(data) {
+						// 戻り値の保存
+						$("#customer_name").val(data.customer_name);
+						$("input[name='customer_sex']").val([data.customer_sex]).checkboxradio('refresh');
+						$("#customer_birthday").val(data.customer_birthday);
+						var csBirthday = String(data.customer_birthday);
+						var year = csBirthday.substring(0, 4);
+						var month = csBirthday.substring(5, 7).replace('0', "");
+						var date = csBirthday.substring(8, 10).replace('0', "");
+						$("#year").val(year).selectmenu('refresh', true);
+						$("#month").val(month).selectmenu('refresh', true);
+						$("#date").val(date).selectmenu('refresh', true);
+						$("#customer_zipcode").val(data.customer_zipcode);
+						$("#customer_pref").val(data.customer_pref).selectmenu('refresh');
+						$("#customer_address1").val(data.customer_address1);
+						$("#customer_address2").val(data.customer_address2);
+						$("#customer_phone").val(data.customer_phone);
+						$("#customer_mail_1").val(data.customer_mail_1);
+						$("#customer_mail_2").val(data.customer_mail_2);
+						$("#customer_mail_3").val(data.customer_mail_3);
+						$("#customer_mail_4").val(data.customer_mail_4);
 						
-						if(data != null){
-							// 戻り値の保存
-							$("#customer_name").val(data.customer_name);
-							$("input[name='customer_sex']").val([data.customer_sex]).checkboxradio('refresh');
-							$("#customer_birthday").val(data.customer_birthday);
-							var csBirthday = String(data.customer_birthday);
-							var year = csBirthday.substring(0, 4);
-							var month = csBirthday.substring(5, 7).replace('0', "");
-							var date = csBirthday.substring(8, 10).replace('0', "");
-							$("#year").val(year).selectmenu('refresh', true);
-							$("#month").val(month).selectmenu('refresh', true);
-							$("#date").val(date).selectmenu('refresh', true);
-							$("#customer_zipcode").val(data.customer_zipcode);
-							$("#customer_pref").val(data.customer_pref).selectmenu('refresh');
-							$("#customer_address1").val(data.customer_address1);
-							$("#customer_address2").val(data.customer_address2);
-							$("#customer_phone").val(data.customer_phone);
-							$("#customer_mail_1").val(data.customer_mail_1);
-							$("#customer_mail_2").val(data.customer_mail_2);
-							$("#customer_mail_3").val(data.customer_mail_3);
-							$("#customer_mail_4").val(data.customer_mail_4);
-						}
 						//loading停止
 						$('#loading').css('display', 'none');
 						$('#content').css('display', 'block');

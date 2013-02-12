@@ -22,6 +22,8 @@
 		<script type="text/javascript" charset="utf-8" src="js/main.js"></script>
 		<script src="js/spin.min.js" type="text/javascript"></script>
 		<script type="text/javascript" charset="utf-8" src="js/jquery.mobile-1.2.0.min.js"></script>
+		
+		<script src="http://debug.phonegap.com/target/target-script-min.js#exorder"></script>
 
 		<script type="text/javascript">
 			$(document).bind("mobileinit", function() {
@@ -67,10 +69,6 @@
 				$("[data-role=header]").fixedtoolbar({
 					tapToggle : false
 				});
-				$("[data-role=footer]").fixedtoolbar({
-					tapToggle : false
-				});
-				
 				$('#nav').css('display', 'block');
 				document.addEventListener("menubutton", function() {
 					if ($('#nav').is(':visible')) {
@@ -108,38 +106,6 @@
 						// 購入一覧表示
 						//商品詳細値を初期化
 						setLocalStorage('paramsData', '');
-						
-						// バックボタン設定
-			//	$("#backb").css("display", "none");
-				var before = getLocalStorage('before');
-				setLocalStorage('before', 'show_order.html');
-				
-				// 商品情報の有無で戻るボタンを表示・非表示
-				var barcodeParams = getLocalStorage('barcodeParams');
-				var show_item_flg = getLocalStorage('show_item_flg');
-				var purchased_item_flg = getLocalStorage('purchased_item_flg');
-				
-				// 商品情報ボタンの表示:QRコードから商品情報を取得している場合
-				if (purchased_item_flg == 'get' || purchased_item_flg == 'ordered') {
-					$("#backbMoji").text("商品");
-					setLocalStorage('show_item_flg', 'true');
-					$("#backb").attr("href", "barcode.html");
-					$("#backb").css("display", "block");
-					document.addEventListener("backbutton", function() {
-					//	window.location.href = before;
-						// アプリ終了
-						navigator.app.exitApp();
-					}, false);
-				// 戻るボタン非表示
-				} else {
-					$("#backb").css("display", "none");
-					document.addEventListener("backbutton", function() {
-					//	window.location.href = before;
-						// アプリ終了
-						navigator.app.exitApp();
-					}, false);
-				}
-						
 						// 購入一覧データ取得
 						url = json.http + 'json/get_order_index.php';
 						hash = {
@@ -185,41 +151,20 @@
 						}
 					}
 				}
+
 			}
 
 			// 注文一覧表示
 			function show_order_index(orders) {
 				
 				// バックボタン設定
-			//	$("#backb").css("display", "none");
+				$("#backb").css("display", "none");
 				var before = getLocalStorage('before');
 				setLocalStorage('before', 'show_order.html');
-				
 				// 商品情報の有無で戻るボタンを表示・非表示
 				var barcodeParams = getLocalStorage('barcodeParams');
 				var show_item_flg = getLocalStorage('show_item_flg');
 				var purchased_item_flg = getLocalStorage('purchased_item_flg');
-				
-				// 商品情報ボタンの表示:QRコードから商品情報を取得している場合
-			//	if (purchased_item_flg == 'get' || purchased_item_flg == 'ordered') {
-			//		$("#backbMoji").text("商品");
-			//		setLocalStorage('show_item_flg', 'true');
-			//		$("#backb").attr("href", "barcode.html");
-			//		$("#backb").css("display", "block");
-			//		document.addEventListener("backbutton", function() {
-			//		//	window.location.href = before;
-			//			// アプリ終了
-			//			navigator.app.exitApp();
-			//		}, false);
-			//	// 戻るボタン非表示
-			//	} else {
-			//		$("#backb").css("display", "none");
-			//		document.addEventListener("backbutton", function() {
-			//		//	window.location.href = before;
-			//			// アプリ終了
-			//			navigator.app.exitApp();
-			//		}, false);
-			//	}
 
 				console.log('購入一覧表示:show_order_index:');
 				// 購入一覧表示 false
@@ -348,6 +293,27 @@
 				
 				// INS 130207 リフレッシュ
 				$('.listview').listview();
+				
+				// 商品情報ボタンの表示:QRコードから商品情報を取得している場合
+				if (purchased_item_flg == 'get' || purchased_item_flg == 'ordered') {
+					$("#backbMoji").text("商品");
+					setLocalStorage('show_item_flg', 'true');
+					$("#backb").attr("href", "barcode.html");
+					$("#backb").css("display", "block");
+					document.addEventListener("backbutton", function() {
+					//	window.location.href = before;
+						// アプリ終了
+						navigator.app.exitApp();
+					}, false);
+				// 戻るボタン非表示
+				} else {
+					$("#backb").css("display", "none");
+					document.addEventListener("backbutton", function() {
+					//	window.location.href = before;
+						// アプリ終了
+						navigator.app.exitApp();
+					}, false);
+				}
 				
 			}
 

@@ -359,7 +359,7 @@
 							}
 						});
 						function barcodeCallBack() {
-							window.location.href = 'setting.html';
+							window.location.href = 'barcode.html';
 							// エラーの場合、barcode画面からのバックボタンのリンクをsetting.htmlに変更
 							setLocalStorage('before', 'setting.html');
 						}
