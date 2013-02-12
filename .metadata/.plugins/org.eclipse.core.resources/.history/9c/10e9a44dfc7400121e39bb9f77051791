@@ -163,28 +163,37 @@
 				setLocalStorage('before', 'show_order.html');
 				// 商品情報の有無で戻るボタンを表示・非表示
 				var barcodeParams = getLocalStorage('barcodeParams');
-				var show_item_flg = getLocalStorage('show_item_flg');
-				var purchased_item_flg = getLocalStorage('purchased_item_flg');
-				
-				// 商品情報ボタンの表示:QRコードから商品情報を取得している場合
-				if (purchased_item_flg == 'get' || purchased_item_flg == 'ordered') {
-					$("#backbMoji").text("商品");
-					setLocalStorage('show_item_flg', 'true');
-					$("#backb").attr("href", "barcode.html");
-					$("#backb").css("display", "block");
-					document.addEventListener("backbutton", function() {
-					//	window.location.href = before;
-						// アプリ終了
-						navigator.app.exitApp();
-					}, false);
 				// 戻るボタン非表示
-				} else {
+
+// EDIT 130207
+//				if ((barcodeParams == null || barcodeParams == "" || barcodeParams == {}) && before == 'barcode.html') {
+				var show_item_flg = getLocalStorage('show_item_flg');
+				if ((barcodeParams == null || barcodeParams == "" || barcodeParams == {}) || show_item_flg == 'false') {
 					$("#backb").css("display", "none");
 					document.addEventListener("backbutton", function() {
-					//	window.location.href = before;
+					//	window.location.href = 'show_order.html';
 						// アプリ終了
 						navigator.app.exitApp();
 					}, false);
+				// 戻るボタン表示
+// EDIT 130207
+//				} else if (before == 'barcode.html') {
+				} else {
+					$("#backb").attr("href", "barcode.html");
+					$("#backbMoji").html("商品"); // 130207
+					$("#backb").css("display", "block");
+					document.addEventListener("backbutton", function() {
+					//	window.location.href = 'barcode.html';
+						// アプリ終了
+						navigator.app.exitApp();
+					}, false);
+/* DEL 130207
+				} else {
+					setLocalStorage('show_oreder_flg', 'false');
+					document.addEventListener("backbutton", function() {
+						window.location.href = 'show_order.html';
+					}, false);
+*/
 				}
 
 				console.log('購入一覧表示:show_order_index:');

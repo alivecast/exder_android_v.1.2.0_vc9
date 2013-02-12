@@ -168,8 +168,8 @@
 				
 				// 商品情報ボタンの表示:QRコードから商品情報を取得している場合
 				if (purchased_item_flg == 'get' || purchased_item_flg == 'ordered') {
-					$("#backbMoji").text("商品");
 					setLocalStorage('show_item_flg', 'true');
+					$("#backbMoji").text("商品");
 					$("#backb").attr("href", "barcode.html");
 					$("#backb").css("display", "block");
 					document.addEventListener("backbutton", function() {

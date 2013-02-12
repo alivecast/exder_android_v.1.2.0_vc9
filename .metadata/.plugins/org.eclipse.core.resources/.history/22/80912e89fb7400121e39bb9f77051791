@@ -97,7 +97,7 @@
 					window.plugins.barcodeScanner.scan(function(result) {
 						
 						// 商品情報フラグ初期化
-						setLocalStorage('purchased_item_flg', '');
+						setLocalStorage(storage, 'purchased_item_flg', '');
 						
 						// キャンセル
 						if (result.cancelled) {
@@ -121,7 +121,7 @@
 						}
 					}, function(error) {
 						// 読み取りフラグ:商品なし
-						setLocalStorage('purchased_item_flg', '');
+						setLocalStorage(storage, 'purchased_item_flg', '');
 						// 読み取り失敗メソッド
 						scannerFailure(error);
 					});
