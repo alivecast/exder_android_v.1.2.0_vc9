@@ -78,8 +78,7 @@
 					}
 					// 戻るボタン 読み取り後
 					document.addEventListener("backbutton", function() {
-					//	window.location.href = before;
-						window.location.href = 'setting.html';
+						window.location.href = before;
 					}, false);
 
 					// qr_id,位置情報の初期化
@@ -95,10 +94,6 @@
 
 					// barcode読み取り
 					window.plugins.barcodeScanner.scan(function(result) {
-						
-						// 商品情報フラグ初期化
-						setLocalStorage(storage, 'purchased_item_flg', '');
-						
 						// キャンセル
 						if (result.cancelled) {
 							window.location.href = 'setting.html';
@@ -161,10 +156,7 @@
 						// 計測
 						var showTime = parseInt(new Date().getTime()) - parseInt(getLocalStorage('time'));
 						console.log('QRコード読み取りから成功メッソド: ' + showTime);
-						
-						// 読み取りフラグ:購入時の住所入力などで、途中でやめ、商品に戻ってきた場合、読み取り後に変えてあげる。
-						setLocalStorage('purchased_item_flg', 'get');
-						
+
 						// 通信確認
 						if (check_network() == 'none') {
 							var chSetting = getLocalStorage('chSetting');
@@ -215,8 +207,6 @@
 
 				// 商品情報の表示
 				function showItem() {
-					
-					setLocalStorage('show_item_flg', 'true');
 					// 計測
 					showTime = parseInt(new Date().getTime()) - parseInt(getLocalStorage('time'));
 					console.log('QRコード読み取りからshowItem: ' + showTime);

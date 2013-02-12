@@ -45,35 +45,47 @@
 				// 戻るボタンの設定
 				var before = getLocalStorage('before');
 				setLocalStorage('before', 'setting.html');
-				
+				document.addEventListener("backbutton", function() {
+					window.location.href = before;
+				}, false);
+
+				// 商品情報の有無で戻るボタンを表示・非表示
 				var barcodeParams = getLocalStorage('barcodeParams');
+				// 戻るボタン非表示
+// EDIT 130207 
+//				if ((barcodeParams == null || barcodeParams == "" || barcodeParams == {}) && before == 'barcode.html') {
 				var show_item_flg = getLocalStorage('show_item_flg');
-				var purchased_item_flg = getLocalStorage('purchased_item_flg');
-				
-				// 商品情報ボタンの表示:QRコードから商品情報を取得している場合
-				if (purchased_item_flg == 'get' || purchased_item_flg == 'ordered') {
-					setLocalStorage('show_item_flg', 'true');
+				if ((barcodeParams == null || barcodeParams == "" || barcodeParams == {}) || show_item_flg == 'false') {
+					// 商品ない場合は、購入フラグも削除 130208 INS
+					setLocalStorage('purchased_item_flg', '');
+					$("#backb").css("display", "none");
+					document.addEventListener("backbutton", function() {
+						window.location.href = 'setting.html';
+					}, false);
+				// 戻るボタン表示
+// EDIT 130207 
+//				} else if (before == 'barcode.html') {
+				} else {
 					$("#backb").attr("href", "barcode.html");
 					$("#backb").css("display", "block");
 					document.addEventListener("backbutton", function() {
-					//	window.location.href = before;
-						// アプリ終了
-						navigator.app.exitApp();
+						window.location.href = 'barcode.html';
 					}, false);
-				// 戻るボタン非表示
+/* DEL 130207 
 				} else {
+					$("#backb").attr("href", "setting.html");
 					$("#backb").css("display", "none");
 					document.addEventListener("backbutton", function() {
-					//	window.location.href = before;
-						// アプリ終了
-						navigator.app.exitApp();
+						window.location.href = 'setting.html';
 					}, false);
+*/
 				}
-				
+
 				$.ajaxSetup({
 					timeout : 3000
 				});
-				
+
+
 				// 時間経過の判定
 				console.log('passTime:judge');
 				var passTime = parseInt(getLocalStorage('passTime'));

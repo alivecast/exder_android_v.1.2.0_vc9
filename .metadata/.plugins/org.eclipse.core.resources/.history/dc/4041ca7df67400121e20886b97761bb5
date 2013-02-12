@@ -134,7 +134,7 @@
 					// アドレスの取得
 					getAddress(json);
 				} else {
-					$('#titleName').html("お届け先追加");
+					$('#titleName').html("お届け先の追加");
 					$('#address_name1').css("display", "block");
 					$("#backb").attr("href", "addressee_index.html");
 // INS 130207

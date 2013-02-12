@@ -52,8 +52,7 @@
 				
 				// 商品情報ボタンの表示:QRコードから商品情報を取得している場合
 				if (purchased_item_flg == 'get' || purchased_item_flg == 'ordered') {
-					setLocalStorage('show_item_flg', 'true');
-					$("#backb").attr("href", "barcode.html");
+					setLocalStorage(storage, 'show_item_flg', 'true');
 					$("#backb").css("display", "block");
 					document.addEventListener("backbutton", function() {
 					//	window.location.href = before;

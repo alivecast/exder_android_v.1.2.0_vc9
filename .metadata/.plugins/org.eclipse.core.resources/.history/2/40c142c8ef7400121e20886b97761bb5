@@ -171,9 +171,7 @@
 				if ((barcodeParams == null || barcodeParams == "" || barcodeParams == {}) || show_item_flg == 'false') {
 					$("#backb").css("display", "none");
 					document.addEventListener("backbutton", function() {
-					//	window.location.href = 'show_order.html';
-						// アプリ終了
-						navigator.app.exitApp();
+						window.location.href = 'show_order.html';
 					}, false);
 				// 戻るボタン表示
 // EDIT 130207
@@ -183,9 +181,7 @@
 					$("#backbMoji").html("商品"); // 130207
 					$("#backb").css("display", "block");
 					document.addEventListener("backbutton", function() {
-					//	window.location.href = 'barcode.html';
-						// アプリ終了
-						navigator.app.exitApp();
+						window.location.href = 'barcode.html';
 					}, false);
 /* DEL 130207
 				} else {
